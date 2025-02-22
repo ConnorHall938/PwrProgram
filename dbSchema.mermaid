@@ -1,0 +1,65 @@
+erDiagram
+    User{
+        bigint id PK
+        string email PK
+    }
+
+    User_Coach{
+        bigint coach_id PK
+        bigint client_id PK
+    }
+
+    Program{
+        bigint user_id PK
+        bigint coach_id PK
+        bigint program_id PK
+        string name
+    }
+
+    Program_Cycle{
+        bigint program_id PK
+        bigint cycle_id PK
+        string name
+        string description
+    }
+
+    Cycle_block{
+        bigint cycle_id PK
+        bigint block_id PK
+        string name
+        string description
+    }
+
+    Exercise{
+        bigint cycle_id PK
+        int week_number PK
+        int session_number PK
+        int exercise_number PK
+        string name
+        string description
+        string tutorial_link
+    }
+
+    Exercise_Sets{
+        bigint cycle_id PK
+        int week_number PK
+        int session_number PK
+        int exercise_number PK
+
+        int target_reps
+        int target_rpe
+        int target_weight
+        int actual_reps
+        int actual_rpe
+        int actual_weight
+    }
+
+    User }o--o{ User_Coach: "Coaches"
+    User ||--o{ Program : "Has"
+
+    Program ||--o{ Program_Cycle : "Has"
+    Program_Cycle ||--o{ Cycle_block : "Has"
+    Cycle_block ||--o{ Exercise : "Has"
+    Exercise ||--o{ Exercise_Sets : "Has"
+
+
