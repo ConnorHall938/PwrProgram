@@ -17,6 +17,7 @@ erDiagram
     }
 
     Program_Cycle{
+        bigint user_id PK
         bigint program_id PK
         bigint cycle_id PK
         string name
@@ -24,6 +25,8 @@ erDiagram
     }
 
     Cycle_block{
+        bigint user_id PK
+        bigint program_id PK
         bigint cycle_id PK
         bigint block_id PK
         string name
@@ -31,7 +34,10 @@ erDiagram
     }
 
     Exercise{
+        bigint user_id PK
+        bigint program_id PK
         bigint cycle_id PK
+        bigint block_id PK
         int week_number PK
         int session_number PK
         int exercise_number PK
@@ -41,10 +47,14 @@ erDiagram
     }
 
     Exercise_Sets{
+        bigint user_id PK
+        bigint program_id PK
         bigint cycle_id PK
+        bigint block_id PK
         int week_number PK
         int session_number PK
         int exercise_number PK
+        int set_number PK
 
         int target_reps
         int target_rpe

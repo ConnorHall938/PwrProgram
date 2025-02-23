@@ -1,19 +1,34 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+import express from 'express'
+import sql, {setupDatabase} from './db-connection.ts'
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 
 const hostname = '127.0.0.1';
 const port = 3000;
 
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Server running on port ${port}`);
+  console.log(`Setting up database...`);
+  let result = await setupDatabase();
+  if (result) {
+    console.log(`Database setup complete`);
+  }
+  else{
+    console.log(`Database setup failed`);
+    process.exit(1);
+  }
 });
 
 // Internal for me
-app.get('/api/users', (req,res) => {
-	res.json({message: `Getting users`});
+app.get('/api/users/:id', async (req,res) => {
+  let result = await sql`SELECT * FROM PwrProgram.users`;
+  if (result.length === 0) {
+    res.status(404).json('User not found');
+  }
+  else {
+    res.json({result});
+  }
 });
 
 
