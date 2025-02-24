@@ -31,6 +31,19 @@ app.get('/api/users/:id', async (req,res) => {
   }
 });
 
+app.post('/api/users', async (req,res) => {
+  let {name,email, password} = req.body;
+  let result = await sql`INSERT INTO PwrProgram.users (name, email, password) VALUES (${name}, ${email}, ${password}) RETURNING id`;
+  if (result) {
+    res.status(201).json({id: result[0].id, 
+                          name: name,
+                          email: email});
+              }
+  else {
+    res.status(500).json({message: `User ${username} not created`});
+  }
+});
+
 
 // External for the client
 app.get(`/api/clients`, (req,res) => {
