@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
-
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
+import { Program } from "./program"
 @Entity()
 export class User {
 
@@ -17,14 +17,14 @@ export class User {
         {
             unique: false,
             nullable: true
-            }
+        }
     )
     lastName: string
 
     @Column(
-    {
-    unique: true
-    }
+        {
+            unique: true
+        }
     )
     email: string
 
@@ -32,8 +32,10 @@ export class User {
         {
             unique: false,
             nullable: true
-            }
+        }
     )
     password: string
 
+    @OneToMany(() => Program, (program) => program.user)
+    programs: Program
 }
