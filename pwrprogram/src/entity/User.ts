@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 
 @Entity()
 export class User {
@@ -21,7 +21,7 @@ export class User {
     )
     lastName: string
 
-    @PrimaryColumn(
+    @Column(
     {
     unique: true
     }
