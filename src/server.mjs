@@ -1,5 +1,5 @@
 import express from 'express'
-import sql, {setupDatabase} from './db-connection.ts'
+import sqlPool, {setupDatabase, query} from './db-connection.ts'
 
 const app = express();
 app.use(express.json());
@@ -22,18 +22,18 @@ app.listen(port, async () => {
 
 // Internal for me
 app.get('/api/users/:id', async (req,res) => {
-  let result = await sql`SELECT * FROM PwrProgram.users`;
-  if (result.length === 0) {
-    res.status(404).json('User not found');
+  let result = await query(`SELECT * FROM PwrProgram.users`);
+  if (result.rowCount != 1) {
+    res.status(404).json({message: `User ${req.params.id} not found`});
   }
   else {
-    res.json({result});
+    res.json(result.rows[0]);
   }
 });
 
 app.post('/api/users', async (req,res) => {
   let {name,email, password} = req.body;
-  let result = await sql`INSERT INTO PwrProgram.users (name, email, password) VALUES (${name}, ${email}, ${password}) RETURNING id`;
+  let result = await query(`INSERT INTO PwrProgram.users (name, email, password) VALUES ($1, $2, $3)`, [name, email, password]);
   if (result) {
     res.status(201).json({id: result[0].id, 
                           name: name,

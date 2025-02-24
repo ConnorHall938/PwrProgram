@@ -1,19 +1,23 @@
-import postgres from 'postgres';
+import pg from 'pg';
+const {Pool} = pg;
 
-const sql = postgres({
+const sqlPool = new Pool({
     host: 'localhost',
     port: 5432,
     database: 'PwrProgram',
-    username: 'postgres',
+    user: 'postgres',
     password: 'password',
-    debug: true
 })
 
-export default sql;
+export default sqlPool;
+
+export async function query(text: string, params: any[]) {
+    return await sqlPool.query(text, params);
+}
 
 export async function setupDatabase(): Promise<boolean> {
     // Create the database
-    let create_schema_result = await sql`CREATE SCHEMA IF NOT EXISTS PwrProgram`;
+    let create_schema_result = await query(`CREATE SCHEMA IF NOT EXISTS PwrProgram`,[]);
     if(create_schema_result)
         console.log('Database created');
     else{
@@ -23,41 +27,41 @@ export async function setupDatabase(): Promise<boolean> {
     }
     // Create the tables
     let table_promises = [
-        ["User Table", sql`CREATE TABLE IF NOT EXISTS PwrProgram.users (
+        ["User Table", query(`CREATE TABLE IF NOT EXISTS PwrProgram.users (
 id SERIAL,
 name VARCHAR(255),
 email VARCHAR(255) NOT NULL,
 password VARCHAR(255),
 PRIMARY KEY(id),
-UNIQUE(email))`],
-        ["User Coach Table", sql`CREATE TABLE IF NOT EXISTS PwrProgram.user_coach (
+UNIQUE(email))`,[])],
+        ["User Coach Table", query(`CREATE TABLE IF NOT EXISTS PwrProgram.user_coach (
 user_id INTEGER NOT NULL REFERENCES PwrProgram.users(id),
 coach_id INTEGER NOT NULL REFERENCES PwrProgram.users(id),
-PRIMARY KEY(user_id, coach_id))`],
-        ["Programs Table", sql`CREATE TABLE IF NOT EXISTS PwrProgram.programs (
+PRIMARY KEY(user_id, coach_id))`,[])],
+        ["Programs Table", query(`CREATE TABLE IF NOT EXISTS PwrProgram.programs (
 program_id INTEGER,
 name VARCHAR(255),
 description VARCHAR(255),
 user_id INTEGER REFERENCES PwrProgram.users(id),
 coach_id INTEGER REFERENCES PwrProgram.users(id),
-PRIMARY KEY(user_id, program_id))`],
-        ["Program Cycle Table", sql`CREATE TABLE IF NOT EXISTS PwrProgram.program_cycles (
+PRIMARY KEY(user_id, program_id))`,[])],
+        ["Program Cycle Table", query(`CREATE TABLE IF NOT EXISTS PwrProgram.program_cycles (
 cycle_id INTEGER,
 program_id INTEGER,
 user_id INTEGER,
 name VARCHAR(255),
 description VARCHAR(255),
 PRIMARY KEY(user_id, program_id, cycle_id),
-FOREIGN KEY(program_id, user_id) REFERENCES PwrProgram.programs (program_id, user_id))`],
-        ["Cycle Block Table", sql`CREATE TABLE IF NOT EXISTS PwrProgram.cycle_block (
+FOREIGN KEY(program_id, user_id) REFERENCES PwrProgram.programs (program_id, user_id))`,[])],
+        ["Cycle Block Table", query(`CREATE TABLE IF NOT EXISTS PwrProgram.cycle_block (
 block_id INTEGER,
 user_id INTEGER,
 program_id INTEGER,
 cycle_id INTEGER,
 name VARCHAR(255), description VARCHAR(255),
 PRIMARY KEY(user_id, program_id, cycle_id, block_id),
-FOREIGN KEY(user_id, program_id, cycle_id) REFERENCES PwrProgram.program_cycles(user_id, program_id, cycle_id))`],
-        ["Exercise Table", sql`CREATE TABLE IF NOT EXISTS PwrProgram.exercises (
+FOREIGN KEY(user_id, program_id, cycle_id) REFERENCES PwrProgram.program_cycles(user_id, program_id, cycle_id))`,[])],
+        ["Exercise Table", query(`CREATE TABLE IF NOT EXISTS PwrProgram.exercises (
 user_id INTEGER,
 program_id INTEGER,
 cycle_id INTEGER,
@@ -69,8 +73,8 @@ name VARCHAR(255),
 description VARCHAR(255),
 tutorial_link VARCHAR(255),
 PRIMARY KEY(user_id, program_id, cycle_id, block_id, week_number, session_number, exercise_number),
-FOREIGN KEY(user_id, program_id, cycle_id, block_id) REFERENCES PwrProgram.cycle_block(user_id, program_id, cycle_id, block_id))`],
-        ["Exercise Set Table", sql`CREATE TABLE IF NOT EXISTS PwrProgram.exercise_sets (
+FOREIGN KEY(user_id, program_id, cycle_id, block_id) REFERENCES PwrProgram.cycle_block(user_id, program_id, cycle_id, block_id))`,[])],
+        ["Exercise Set Table", query(`CREATE TABLE IF NOT EXISTS PwrProgram.exercise_sets (
 user_id INTEGER,
 program_id INTEGER,
 cycle_id INTEGER,
@@ -86,7 +90,7 @@ actual_reps INTEGER,
 actual_rpe INTEGER,
 actual_weight INTEGER,
 PRIMARY KEY(user_id, program_id, cycle_id, block_id, week_number, session_number, exercise_number, set_number),
-FOREIGN KEY(user_id, program_id, cycle_id, block_id, week_number, session_number, exercise_number) REFERENCES PwrProgram.exercises(user_id, program_id, cycle_id, block_id, week_number, session_number, exercise_number))`],
+FOREIGN KEY(user_id, program_id, cycle_id, block_id, week_number, session_number, exercise_number) REFERENCES PwrProgram.exercises(user_id, program_id, cycle_id, block_id, week_number, session_number, exercise_number))`,[])],
     ];
     try{
         for (let table_promise of table_promises){
