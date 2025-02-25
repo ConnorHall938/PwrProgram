@@ -29,10 +29,7 @@ const progRepo = AppDataSource.getRepository(Program)
 
 router.get('/:id', async (req, res) => {
     const user = await progRepo.findOne({
-        where: { id: req.params.id, userId: req.user_id },
-        relations: {
-            user: true,
-        },
+        where: { id: req.params.id, userId: req.user_id }
     }
     )
     if (!user) {
@@ -43,22 +40,40 @@ router.get('/:id', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-    //const userList = await userRepo.find()
-    //res.status(200).json(userList)
+    const programList = await progRepo.find({
+        where: { userId: req.user_id }
+    });
+    res.status(200).json(programList)
 });
 
 router.post('/', async (req, res) => {
-    /*     const user = userRepo.create(req.body)
-        await userRepo.save(user).then(
-            function () {
-                res.status(201).json(user);
+    let program = new Program();
+    program.name = req.body.name;
+    program.description = req.body.description;
+    program.userId = req.user_id;
+    program.coachId = req.body.coachId;
+
+    // Get the user's most recent program
+    let mostRecentProgram = await progRepo.findOne({
+        where: { userId: req.user_id },
+        order: { id: "DESC" }
+    });
+    program.id = mostRecentProgram ? mostRecentProgram.id + 1 : 1;
+
+    await progRepo.save(program).then(
+        function () {
+            res.status(201).json(program);
+        }
+
+    ).catch(
+        error => {
+            if (error.code === '23505') {
+                res.status(400).json({ message: "Duplicate email entered" })
             }
-    
-        ).catch(
-            error => {
-                if (error.code === '23505') {
-                    res.status(400).json({ message: "Duplicate email entered" })
-                }
+            else {
+                console.log(error);
+                res.status(500).json({ message: "Internal server error" });
             }
-        ) */
+        }
+    )
 });

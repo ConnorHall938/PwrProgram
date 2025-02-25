@@ -12,7 +12,13 @@ export class Program {
     @Column({
         nullable: true
     })
-    coachId: number
+    coachId?: number
+
+    @Column()
+    name: string
+
+    @Column({ nullable: true })
+    description: string
 
     @ManyToOne(() => User, (user) => user.programs)
     user: User
