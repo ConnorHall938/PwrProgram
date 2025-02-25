@@ -12,9 +12,7 @@
                 "<node_internals>/**"
             ],
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
-            "runtimeArgs": [
-                "--transpile-only", 
-            ],
+            "runtimeArgs": [],
             "program": "${workspaceFolder}\\pwrprogram\\src\\index.ts"
         }
     ]

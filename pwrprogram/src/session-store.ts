@@ -20,6 +20,6 @@ export function get_user_from_request(req): number {
         return session_dictionary[cookie_value]
     }
     else {
-        throw new UnauthorizedException('Session ID does not exist')
+        throw new UnauthorizedException('Session ID does not exist');
     }
 }
