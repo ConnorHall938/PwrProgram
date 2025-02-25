@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, ManyToOne } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, ManyToOne, OneToMany } from "typeorm"
 import { User } from "./User"
+import { Cycle } from "./cycle"
 
 @Entity()
 export class Program {
@@ -22,4 +23,7 @@ export class Program {
 
     @ManyToOne(() => User, (user) => user.programs)
     user: User
+
+    @OneToMany(() => Cycle, (cycle) => cycle.program)
+    cycles: Cycle[]
 }
