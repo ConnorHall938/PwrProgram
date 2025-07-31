@@ -4,6 +4,7 @@ import { Program } from "../entity/program"
 import { get_user_from_request } from '../session-store'
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import Cycles from './cycles'
+import { removeFieldsMiddleware } from '../../middleware/removeFields';
 
 const router = Express.Router()
 
@@ -28,24 +29,28 @@ export default router
 
 const progRepo = AppDataSource.getRepository(Program)
 
-router.get('/:id', async (req, res) => {
-    const user = await progRepo.findOne({
-        where: { id: req.params.id, userId: req.user_id }
-    }
-    )
-    if (!user) {
-        res.status(404).send(null);
-        return;
-    }
-    res.status(200).json(user)
-});
-
-router.get('/', async (req, res) => {
-    const programList = await progRepo.find({
-        where: { userId: req.user_id }
+router.get('/:id',
+    removeFieldsMiddleware(['id', 'coachId']),
+    async (req, res) => {
+        const user = await progRepo.findOne({
+            where: { id: req.params.id, userId: req.user_id }
+        }
+        )
+        if (!user) {
+            res.status(404).send(null);
+            return;
+        }
+        res.status(200).json(user)
     });
-    res.status(200).json(programList)
-});
+
+router.get('/',
+    removeFieldsMiddleware(['id', 'coachId']),
+    async (req, res) => {
+        const programList = await progRepo.find({
+            where: { userId: req.user_id }
+        });
+        res.status(200).json(programList)
+    });
 
 router.post('/', async (req, res) => {
     let program = new Program();
