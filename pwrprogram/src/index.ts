@@ -1,5 +1,4 @@
 import { AppDataSource } from "./data-source"
-import { User } from "./entity/User"
 import * as express from 'express'
 import * as cookieParser from 'cookie-parser'
 import mountRoutes from './routes/index'

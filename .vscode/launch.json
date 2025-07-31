@@ -14,6 +14,20 @@
             "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
             "runtimeArgs": [],
             "program": "${workspaceFolder}\\pwrprogram\\src\\index.ts"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program with Nodemon",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/nodemon",
+            "runtimeArgs": [
+                "--exec",
+                "${workspaceRoot}/node_modules/.bin/ts-node"
+            ],
+            "program": "${workspaceFolder}\\pwrprogram\\src\\index.ts"
         }
     ]
 }

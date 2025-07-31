@@ -1,10 +1,11 @@
-import Router from 'express-promise-router'
+import * as Express from 'express';
 import { AppDataSource } from "../data-source"
 import { Program } from "../entity/program"
 import { get_user_from_request } from '../session-store'
 import { UnauthorizedException } from '../errors/unauthorizederror'
+import Cycles from './cycles'
 
-const router = Router()
+const router = Express.Router()
 
 //Attach userID from cookie
 router.use(function (req, res, next) {
@@ -77,3 +78,5 @@ router.post('/', async (req, res) => {
         }
     )
 });
+
+router.use('/:programId/cycles', Cycles);

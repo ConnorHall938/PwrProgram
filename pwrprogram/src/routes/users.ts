@@ -1,8 +1,8 @@
-import Router from 'express-promise-router'
+import * as Express from 'express';
 import { AppDataSource } from "../data-source"
 import { User } from "../entity/User"
 
-const router = Router()
+const router = Express.Router()
 export default router
 
 const userRepo = AppDataSource.getRepository(User)
