@@ -57,12 +57,13 @@ router.post('/',
         session.description = req.body.description;
         session.userId = req.user_id;
         session.blockId = req.block_id;
-        session.cycleId = req.params.cycleId;
-        session.programId = req.params.programId;
+        session.cycleId = req.cycle_id;
+        session.programId = req.program_id;
+        session.completed = req.body.completed || false; // Default to false if not provided
 
         // Get the user's most recent session
         let mostRecentSession = await sessionRepo.findOne({
-            where: { userId: req.user_id, blockId: req.block_id, cycleId: req.params.cycleId, programId: req.params.programId },
+            where: { userId: req.user_id, blockId: req.block_id, cycleId: req.cycle_id, programId: req.program_id },
             order: { id: "DESC" }
         });
 
@@ -74,6 +75,26 @@ router.post('/',
 
         await sessionRepo.save(session);
         res.status(201).json(session);
+    });
+
+router.patch('/:id',
+    removeFieldsMiddleware(['userId', 'blockId', 'cycleId', 'programId']),
+    async (req, res) => {
+        const session = await sessionRepo.findOne({
+            where: { id: req.params.id, userId: req.user_id, blockId: req.block_id }
+        });
+        if (!session) {
+            res.status(404).send(null);
+            return;
+        }
+
+        // Update fields
+        session.name = req.body.name || session.name;
+        session.description = req.body.description || session.description;
+        session.completed = req.body.completed || session.completed;
+
+        await sessionRepo.save(session);
+        res.status(200).json(session);
     });
 
 router.use('/:sessionId/exercises', Exercises);

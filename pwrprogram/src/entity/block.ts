@@ -22,6 +22,9 @@ export class Block {
     @Column({ nullable: true })
     description: string
 
+    @Column({ nullable: false })
+    completed: boolean
+
     @Column("text", { array: true, nullable: true })
     goals: string[]
 

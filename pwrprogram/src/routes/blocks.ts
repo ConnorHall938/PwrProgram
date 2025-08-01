@@ -60,6 +60,7 @@ router.post('/',
         block.programId = req.program_id;
         block.cycleId = req.cycle_id;
         block.goals = req.body.goals || [];
+        block.completed = req.body.completed || false; // Default to false if not provided
 
         // Get the user's most recent Block
         let mostRecentBlock = await blockRepo.findOne({
@@ -75,6 +76,28 @@ router.post('/',
 
         await blockRepo.save(block);
         res.status(201).json(block);
+    });
+
+router.patch('/:id',
+    removeFieldsMiddleware(['userId', 'cycleId', 'programId']),
+    async (req, res) => {
+        const block = await blockRepo.findOne({
+            where: { id: req.params.id, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
+        });
+        if (!block) {
+            res.status(404).send(null);
+            return;
+        }
+
+        // Update fields
+        block.name = req.body.name || block.name;
+        block.description = req.body.description || block.description;
+        block.completed = req.body.completed || block.completed;
+        block.goals = req.body.goals || block.goals;
+        block.sessions_per_week = req.body.sessions_per_week || block.sessions_per_week;
+
+        await blockRepo.save(block);
+        res.status(200).json(block);
     });
 
 router.use('/:blockId/sessions', Sessions);

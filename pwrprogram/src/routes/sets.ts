@@ -83,3 +83,30 @@ router.get('/',
         });
         res.status(200).json(setList);
     });
+
+router.patch('/:id',
+    removeFieldsMiddleware(['userId', 'exerciseId', 'sessionId', 'blockId', 'cycleId', 'programId']),
+    async (req, res) => {
+        const set = await setRepo.findOne({
+            where: { id: req.params.id, userId: req.user_id, exerciseId: req.exercise_id }
+        });
+        if (!set) {
+            res.status(404).send(null);
+            return;
+        }
+
+        // Update fields
+        set.target_reps = req.body.target_reps || set.target_reps;
+        set.target_weight = req.body.target_weight || set.target_weight;
+        set.target_percentage = req.body.target_percentage || set.target_percentage;
+        set.target_rpe = req.body.target_rpe || set.target_rpe;
+        set.actual_reps = req.body.actual_reps || set.actual_reps;
+        set.actual_weight = req.body.actual_weight || set.actual_weight;
+        set.actual_rpe = req.body.actual_rpe || set.actual_rpe;
+        set.tempo = req.body.tempo || set.tempo;
+        set.rest = req.body.rest || set.rest;
+        set.notes = req.body.notes || set.notes;
+
+        await setRepo.save(set);
+        res.status(200).json(set);
+    });

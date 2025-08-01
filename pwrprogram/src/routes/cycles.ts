@@ -53,9 +53,9 @@ router.post('/', async (req, res) => {
     cycle.name = req.body.name;
     cycle.description = req.body.description;
     cycle.userId = req.user_id;
-    cycle.goals = req.body.goals || [];
-    // Program ID is provided in the request URL
     cycle.programId = req.program_id;
+    cycle.goals = req.body.goals || [];
+    cycle.completed = req.body.completed || false; // Default to false if not provided
 
     // Get the user's most recent cycle
     let mostRecentCycle = await cycleRepo.findOne({
@@ -72,5 +72,26 @@ router.post('/', async (req, res) => {
     await cycleRepo.save(cycle);
     res.status(201).json(cycle);
 });
+
+router.patch('/:id',
+    removeFieldsMiddleware(['userId', 'programId']),
+    async (req, res) => {
+        const cycle = await cycleRepo.findOne({
+            where: { id: req.params.id, userId: req.user_id, programId: req.program_id }
+        });
+        if (!cycle) {
+            res.status(404).send(null);
+            return;
+        }
+
+        // Update fields
+        cycle.name = req.body.name || cycle.name;
+        cycle.description = req.body.description || cycle.description;
+        cycle.completed = req.body.completed || cycle.completed;
+        cycle.goals = req.body.goals || cycle.goals;
+
+        await cycleRepo.save(cycle);
+        res.status(200).json(cycle);
+    });
 
 router.use('/:cycleId/blocks', Blocks);

@@ -22,6 +22,9 @@ export class Session {
     @Column()
     name: string
 
+    @Column({ nullable: false })
+    completed: boolean
+
     @Column({ nullable: true })
     description: string
 

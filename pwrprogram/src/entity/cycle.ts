@@ -19,6 +19,9 @@ export class Cycle {
     @Column({ nullable: true })
     description: string
 
+    @Column({ nullable: false })
+    completed: boolean
+
     @Column("text", { array: true, nullable: true })
     goals: string[]
 

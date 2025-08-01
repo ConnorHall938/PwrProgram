@@ -7,6 +7,7 @@ const getLoggedInUsers = () => Object.keys(session_dictionary).map(function (key
 export function create_session(user_id: number): string {
     if (getLoggedInUsers().includes(user_id)) {
         console.log("Warning: User is already logged in. Is this a mistake?")
+        delete session_dictionary[user_id];
     }
 
     let session_uuid = uuidv4()
