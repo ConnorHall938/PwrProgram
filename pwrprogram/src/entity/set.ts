@@ -34,6 +34,9 @@ export class Set {
     target_weight: number
 
     @Column({ nullable: true })
+    target_percentage: number
+
+    @Column({ nullable: true })
     target_rpe: number
 
     @Column({ nullable: true })

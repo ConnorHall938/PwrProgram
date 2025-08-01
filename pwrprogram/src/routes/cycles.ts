@@ -4,6 +4,7 @@ import { Cycle } from "../entity/cycle"
 import { get_user_from_request } from '../session-store'
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { removeFieldsMiddleware } from '../../middleware/removeFields';
+import Blocks from './blocks';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -26,7 +27,6 @@ export default router
 const cycleRepo = AppDataSource.getRepository(Cycle);
 
 router.get('/:id',
-    removeFieldsMiddleware(['id']),
     async (req, res) => {
         const cycle = await cycleRepo.findOne({
             where: { id: req.params.id, userId: req.user_id, programId: req.program_id }
@@ -39,16 +39,14 @@ router.get('/:id',
     });
 
 
-router.get('/',
-    removeFieldsMiddleware(['id']),
-    async (req, res) => {
-        const cycleList = await cycleRepo.find({
-            where: { userId: req.user_id, programId: req.program_id }
-        });
-        const cleanedList = cycleList.map(({ id, userId, programId, ...rest }) => rest);
-
-        res.status(200).json(cleanedList);
+router.get('/', async (req, res) => {
+    const cycleList = await cycleRepo.find({
+        where: { userId: req.user_id, programId: req.program_id }
     });
+    const cleanedList = cycleList.map(({ id, userId, programId, ...rest }) => rest);
+
+    res.status(200).json(cleanedList);
+});
 
 router.post('/', async (req, res) => {
     let cycle = new Cycle();
@@ -74,3 +72,5 @@ router.post('/', async (req, res) => {
     await cycleRepo.save(cycle);
     res.status(201).json(cycle);
 });
+
+router.use('/:cycleId/blocks', Blocks);

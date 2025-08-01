@@ -25,6 +25,9 @@ export class Block {
     @Column("text", { array: true, nullable: true })
     goals: string[]
 
+    @Column({ nullable: false })
+    sessions_per_week: number
+
     @ManyToOne(() => Cycle, (cycle) => cycle.blocks)
     cycle: Cycle
 
