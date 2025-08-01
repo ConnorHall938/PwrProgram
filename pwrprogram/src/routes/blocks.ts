@@ -1,6 +1,6 @@
 import * as Express from 'express';
 import { AppDataSource } from "../data-source"
-import { get_user_from_request } from '../session-store'
+import { In } from 'typeorm';
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { removeFieldsMiddleware } from '../../middleware/removeFields';
 import { Block } from '../entity/block';
@@ -98,6 +98,51 @@ router.patch('/:id',
 
         await blockRepo.save(block);
         res.status(200).json(block);
+    });
+
+router.get('/:blockId/overview',
+    removeFieldsMiddleware(['userId', 'cycleId', 'programId', 'blockId', 'sessionId', 'exerciseId']),
+    async (req, res) => {
+        const block = await blockRepo.findOne({
+            where: { id: req.params.blockId, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
+        });
+        if (!block) {
+            res.status(404).send(null);
+            return;
+        }
+        //Get all the sessions for this block
+        const sessions = await AppDataSource.getRepository('Session').find({
+            where: { blockId: req.params.blockId, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
+        });
+
+        //Attach each session's exercises and sets
+        for (const session of sessions) {
+            const exercises = await AppDataSource.getRepository('Exercise').find({
+                where: { sessionId: session.id, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
+            });
+            session.exercises = exercises;
+
+            for (const exercise of exercises) {
+                const sets = await AppDataSource.getRepository('Set').find({
+                    where: { exerciseId: exercise.id, sessionId: session.id, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
+                });
+                exercise.sets = sets;
+            }
+        }
+
+        const overview = {
+            block: {
+                id: block.id,
+                name: block.name,
+                description: block.description,
+                goals: block.goals,
+                completed: block.completed,
+                sessions_per_week: block.sessions_per_week
+            },
+            sessions: sessions
+        };
+
+        res.status(200).json(overview);
     });
 
 router.use('/:blockId/sessions', Sessions);
