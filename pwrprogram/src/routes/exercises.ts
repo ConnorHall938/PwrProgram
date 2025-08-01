@@ -77,4 +77,51 @@ router.post('/',
         res.status(201).json(exercise);
     });
 
+router.patch('/:id',
+    removeFieldsMiddleware(['userId', 'sessionId', 'blockId', 'cycleId', 'programId']),
+    async (req, res) => {
+        const exercise = await exerciseRepo.findOne({
+            where: { id: req.params.id, userId: req.user_id, sessionId: req.session_id }
+        });
+        if (!exercise) {
+            res.status(404).send(null);
+            return;
+        }
+
+        // Update fields
+        exercise.name = req.body.name || exercise.name;
+        exercise.description = req.body.description || exercise.description;
+        exercise.completed = req.body.completed || exercise.completed;
+
+        await exerciseRepo.save(exercise);
+        res.status(200).json(exercise);
+    });
+
+router.get('/:exerciseId/overview',
+    removeFieldsMiddleware(['userId', 'sessionId', 'blockId', 'cycleId', 'programId']),
+    async (req, res) => {
+        const exercise = await exerciseRepo.findOne({
+            where: { id: req.params.exerciseId, userId: req.user_id, sessionId: req.session_id }
+        });
+        if (!exercise) {
+            res.status(404).send(null);
+            return;
+        }
+
+        // Get the sets for this exercise
+        const sets = await AppDataSource.getRepository('Set').find({
+            where: { exerciseId: exercise.id, userId: req.user_id, sessionId: req.session_id }
+        });
+
+        const overview = {
+            id: exercise.id,
+            name: exercise.name,
+            description: exercise.description,
+            completed: exercise.completed,
+            sets: sets
+        };
+
+        res.status(200).json(overview);
+    });
+
 router.use('/:exerciseId/sets', Sets);

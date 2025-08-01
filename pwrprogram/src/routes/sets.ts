@@ -42,6 +42,7 @@ router.post('/',
         set.actual_reps = req.body.actual_reps;
         set.actual_weight = req.body.actual_weight;
         set.actual_rpe = req.body.actual_rpe;
+        set.completed = req.body.completed || false; // Default to false if not provided
         set.tempo = req.body.tempo || "0:0:0"; // Default to "0:0:0" if not provided
         set.rest = req.body.rest || 0; // Default to 0 if not provided
         set.notes = req.body.notes || ""; // Default to empty string if not provided
@@ -103,6 +104,7 @@ router.patch('/:id',
         set.actual_reps = req.body.actual_reps || set.actual_reps;
         set.actual_weight = req.body.actual_weight || set.actual_weight;
         set.actual_rpe = req.body.actual_rpe || set.actual_rpe;
+        set.completed = req.body.completed || set.completed;
         set.tempo = req.body.tempo || set.tempo;
         set.rest = req.body.rest || set.rest;
         set.notes = req.body.notes || set.notes;

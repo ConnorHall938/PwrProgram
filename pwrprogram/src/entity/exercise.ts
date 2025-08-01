@@ -28,6 +28,9 @@ export class Exercise {
     @Column({ nullable: true })
     description: string
 
+    @Column({ nullable: false })
+    completed: boolean
+
     @Column({ nullable: true })
     tutorial_url: string
 

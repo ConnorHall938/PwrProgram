@@ -131,14 +131,13 @@ router.get('/:blockId/overview',
         }
 
         const overview = {
-            block: {
-                id: block.id,
-                name: block.name,
-                description: block.description,
-                goals: block.goals,
-                completed: block.completed,
-                sessions_per_week: block.sessions_per_week
-            },
+
+            id: block.id,
+            name: block.name,
+            description: block.description,
+            goals: block.goals,
+            completed: block.completed,
+            sessions_per_week: block.sessions_per_week,
             sessions: sessions
         };
 

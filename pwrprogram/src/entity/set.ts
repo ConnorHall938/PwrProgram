@@ -48,6 +48,9 @@ export class Set {
     @Column({ nullable: true })
     actual_rpe: number
 
+    @Column({ nullable: false })
+    completed: boolean
+
     @Column({ nullable: true })
     rest: number
 

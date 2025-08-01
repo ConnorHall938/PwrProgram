@@ -97,4 +97,40 @@ router.patch('/:id',
         res.status(200).json(session);
     });
 
+router.get('/:sessionId/overview',
+    removeFieldsMiddleware(['userId', 'blockId', 'cycleId', 'programId', 'exerciseId']),
+    async (req, res) => {
+        const session = await sessionRepo.findOne({
+            where: { id: req.params.sessionId, userId: req.user_id, blockId: req.block_id }
+        });
+        if (!session) {
+            res.status(404).send(null);
+            return;
+        }
+
+        // Fetch exercises for the session
+        const exercises = await AppDataSource.getRepository('Exercise').find({
+            where: { sessionId: session.id, userId: req.user_id, blockId: req.block_id }
+        });
+
+        // Attach each exercise's sets
+        for (const exercise of exercises) {
+            const sets = await AppDataSource.getRepository('Set').find({
+                where: { exerciseId: exercise.id, sessionId: session.id, userId: req.user_id, blockId: req.block_id }
+            });
+            exercise.sets = sets;
+        }
+
+        // Create overview object
+        const overview = {
+            id: session.id,
+            name: session.name,
+            description: session.description,
+            completed: session.completed,
+            exercises: exercises
+        };
+
+        res.status(200).json(overview);
+    });
+
 router.use('/:sessionId/exercises', Exercises);
