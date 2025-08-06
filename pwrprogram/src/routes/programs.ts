@@ -3,8 +3,7 @@ import { AppDataSource } from "../data-source"
 import { Program } from "../entity/program"
 import { get_user_from_request } from '../session-store'
 import { UnauthorizedException } from '../errors/unauthorizederror'
-import Cycles from './cycles'
-import { removeFieldsMiddleware } from '../../middleware/removeFields';
+import { Cycle } from '../entity/cycle';
 
 const router = Express.Router()
 
@@ -30,7 +29,6 @@ export default router
 const progRepo = AppDataSource.getRepository(Program)
 
 router.get('/:id',
-    removeFieldsMiddleware(['id', 'coachId']),
     async (req, res) => {
         const user = await progRepo.findOne({
             where: { id: req.params.id, userId: req.user_id }
@@ -44,7 +42,6 @@ router.get('/:id',
     });
 
 router.get('/',
-    removeFieldsMiddleware(['id', 'coachId']),
     async (req, res) => {
         const programList = await progRepo.find({
             where: { userId: req.user_id }
@@ -59,18 +56,10 @@ router.post('/', async (req, res) => {
     program.userId = req.user_id;
     program.coachId = req.body.coachId;
 
-    // Get the user's most recent program
-    let mostRecentProgram = await progRepo.findOne({
-        where: { userId: req.user_id },
-        order: { id: "DESC" }
-    });
-    program.id = mostRecentProgram ? mostRecentProgram.id + 1 : 1;
-
-    await progRepo.save(program).then(
+    progRepo.save(program).then(
         function () {
             res.status(201).json(program);
         }
-
     ).catch(
         error => {
             if (error.code === '23505') {
@@ -84,4 +73,27 @@ router.post('/', async (req, res) => {
     )
 });
 
-router.use('/:programId/cycles', Cycles);
+
+// =============== Cycles Routes ===============
+
+const cycleRepo = AppDataSource.getRepository(Cycle);
+
+router.post('/:programId/cycles', async (req, res) => {
+    let cycle = new Cycle();
+    cycle.programId = req.params.programId;
+    cycle.name = req.body.name;
+    cycle.description = req.body.description;
+    cycle.goals = Array.isArray(req.body.goals) ? req.body.goals : null;
+    cycle.completed = req.body.completed; // Defaults to false if not provided
+
+    await cycleRepo.save(cycle);
+    res.status(201).json(cycle);
+});
+
+router.get('/:programId/cycles', async (req, res) => {
+    const cycleList = await cycleRepo.find({
+        where: { programId: req.params.programId }
+    });
+
+    res.status(200).json(cycleList);
+});

@@ -3,39 +3,21 @@ import { Program } from "./program"
 @Entity()
 export class User {
 
-    @PrimaryGeneratedColumn()
-    id: number
+    @PrimaryGeneratedColumn('uuid')
+    id: string
 
-    @Column(
-        {
-            unique: false
-        }
-    )
-    firstName: string
+    @Column({ unique: false })
+    firstName: string;
 
-    @Column(
-        {
-            unique: false,
-            nullable: true
-        }
-    )
-    lastName: string
+    @Column({ unique: false, nullable: true })
+    lastName: string;
 
-    @Column(
-        {
-            unique: true
-        }
-    )
-    email: string
+    @Column({ unique: true })
+    email: string;
 
-    @Column(
-        {
-            unique: false,
-            nullable: true
-        }
-    )
-    password: string
+    @Column({ unique: false, nullable: true })
+    password: string;
 
     @OneToMany(() => Program, (program) => program.user)
-    programs: Program
+    programs: Program[];
 }

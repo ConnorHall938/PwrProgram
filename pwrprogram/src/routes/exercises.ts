@@ -1,10 +1,8 @@
 import * as Express from 'express';
 import { AppDataSource } from "../data-source"
-import { get_user_from_request } from '../session-store'
 import { UnauthorizedException } from '../errors/unauthorizederror'
-import { removeFieldsMiddleware } from '../../middleware/removeFields';
 import { Exercise } from '../entity/exercise';
-import Sets from './sets';
+import { Set } from '../entity/set';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -27,10 +25,9 @@ export default router
 const exerciseRepo = AppDataSource.getRepository(Exercise);
 
 router.get('/:id',
-    removeFieldsMiddleware(['userId', 'sessionId', 'blockId', 'cycleId', 'programId']),
     async (req, res) => {
         const exercise = await exerciseRepo.findOne({
-            where: { id: req.params.id, userId: req.user_id, sessionId: req.session_id }
+            where: { id: req.params.id, sessionId: req.session_id }
         });
         if (!exercise) {
             res.status(404).send(null);
@@ -39,49 +36,10 @@ router.get('/:id',
         res.status(200).json(exercise);
     });
 
-
-router.get('/',
-    removeFieldsMiddleware(['userId', 'sessionId', 'blockId', 'cycleId', 'programId']),
-    async (req, res) => {
-        const exerciseList = await exerciseRepo.find({
-            where: { userId: req.user_id, sessionId: req.session_id }
-        });
-
-        res.status(200).json(exerciseList);
-    });
-
-router.post('/',
-    removeFieldsMiddleware(['userId', 'sessionId', 'blockId', 'cycleId', 'programId']),
-    async (req, res) => {
-        let exercise = new Exercise();
-        exercise.name = req.body.name;
-        exercise.description = req.body.description;
-        exercise.userId = req.user_id;
-        exercise.sessionId = req.session_id;
-        exercise.blockId = req.params.blockId; // Block ID is provided in the request URL
-        exercise.cycleId = req.params.cycleId; // Cycle ID is provided in the request URL
-        exercise.programId = req.params.programId; // Program ID is provided in the request URL
-
-        // Get the user's most recent exercise
-        let mostRecentExercise = await exerciseRepo.findOne({
-            where: { userId: req.user_id, sessionId: req.session_id },
-            order: { id: 'DESC' }
-        });
-        if (mostRecentExercise) {
-            exercise.id = mostRecentExercise.id + 1; // Increment id based on the last exercise
-        } else {
-            exercise.id = 1; // First exercise for the user
-        }
-
-        await exerciseRepo.save(exercise);
-        res.status(201).json(exercise);
-    });
-
 router.patch('/:id',
-    removeFieldsMiddleware(['userId', 'sessionId', 'blockId', 'cycleId', 'programId']),
     async (req, res) => {
         const exercise = await exerciseRepo.findOne({
-            where: { id: req.params.id, userId: req.user_id, sessionId: req.session_id }
+            where: { id: req.params.id, sessionId: req.session_id }
         });
         if (!exercise) {
             res.status(404).send(null);
@@ -98,10 +56,9 @@ router.patch('/:id',
     });
 
 router.get('/:exerciseId/overview',
-    removeFieldsMiddleware(['userId', 'sessionId', 'blockId', 'cycleId', 'programId']),
     async (req, res) => {
         const exercise = await exerciseRepo.findOne({
-            where: { id: req.params.exerciseId, userId: req.user_id, sessionId: req.session_id }
+            where: { id: req.params.exerciseId, sessionId: req.session_id }
         });
         if (!exercise) {
             res.status(404).send(null);
@@ -124,4 +81,34 @@ router.get('/:exerciseId/overview',
         res.status(200).json(overview);
     });
 
-router.use('/:exerciseId/sets', Sets);
+// =============== Sets Routes ===============
+
+const setRepo = AppDataSource.getRepository(Set);
+
+router.post('/:exerciseId/sets',
+    async (req, res) => {
+        let set = new Set();
+        set.exerciseId = req.params.exerciseId;
+        set.target_reps = req.body.target_reps;
+        set.target_weight = req.body.target_weight;
+        set.target_percentage = req.body.target_percentage;
+        set.target_rpe = req.body.target_rpe;
+        set.actual_reps = req.body.actual_reps;
+        set.actual_weight = req.body.actual_weight;
+        set.actual_rpe = req.body.actual_rpe;
+        set.completed = req.body.completed || false; // Default to false if not provided
+        set.tempo = req.body.tempo || "0:0:0"; // Default to "0:0:0" if not provided
+        set.rest = req.body.rest || 0; // Default to 0 if not provided
+        set.notes = req.body.notes || ""; // Default to empty string if not provided
+
+        await setRepo.save(set);
+        res.status(201).json(set);
+    });
+
+router.get('/:exerciseId/sets',
+    async (req, res) => {
+        const setList = await setRepo.find({
+            where: { exerciseId: req.params.exerciseId }
+        });
+        res.status(200).json(setList);
+    });

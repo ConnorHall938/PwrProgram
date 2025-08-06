@@ -1,10 +1,8 @@
 import * as Express from 'express';
 import { AppDataSource } from "../data-source"
-import { In } from 'typeorm';
 import { UnauthorizedException } from '../errors/unauthorizederror'
-import { removeFieldsMiddleware } from '../../middleware/removeFields';
 import { Block } from '../entity/block';
-import Sessions from './sessions';
+import { Session } from '../entity/session';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -27,10 +25,9 @@ export default router
 const blockRepo = AppDataSource.getRepository(Block);
 
 router.get('/:id',
-    removeFieldsMiddleware(['userId', 'cycleId', 'programId']),
     async (req, res) => {
         const block = await blockRepo.findOne({
-            where: { id: req.params.id, userId: req.user_id, cycleId: req.cycle_id }
+            where: { id: req.params.id, cycleId: req.cycle_id }
         });
         if (!block) {
             res.status(404).send(null);
@@ -39,50 +36,10 @@ router.get('/:id',
         res.status(200).json(block);
     });
 
-router.get('/',
-    removeFieldsMiddleware(['userId', 'cycleId', 'programId']),
-    async (req, res) => {
-        const blockList = await blockRepo.find({
-            where: { userId: req.user_id, cycleId: req.cycle_id }
-        });
-
-        res.status(200).json(blockList);
-    });
-
-router.post('/',
-    removeFieldsMiddleware(['userId', 'cycleId', 'programId']),
-    async (req, res) => {
-        let block = new Block();
-        block.name = req.body.name;
-        block.description = req.body.description;
-        block.sessions_per_week = req.body.sessions_per_week || 4; // Default to 4 if not provided
-        block.userId = req.user_id;
-        block.programId = req.program_id;
-        block.cycleId = req.cycle_id;
-        block.goals = req.body.goals || [];
-        block.completed = req.body.completed || false; // Default to false if not provided
-
-        // Get the user's most recent Block
-        let mostRecentBlock = await blockRepo.findOne({
-            where: { userId: req.user_id },
-            order: { id: "DESC" }
-        });
-
-        if (mostRecentBlock) {
-            block.id = mostRecentBlock.id + 1; // Increment id based on the last block
-        } else {
-            block.id = 1; // First block for the user
-        }
-
-        await blockRepo.save(block);
-        res.status(201).json(block);
-    });
-
 router.patch('/:id',
-    removeFieldsMiddleware(['userId', 'cycleId', 'programId']),
     async (req, res) => {
         const block = await blockRepo.findOne({
-            where: { id: req.params.id, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
+            where: { id: req.params.id, cycleId: req.cycle_id }
         });
         if (!block) {
             res.status(404).send(null);
@@ -101,10 +58,9 @@ router.patch('/:id',
     });
 
 router.get('/:blockId/overview',
-    removeFieldsMiddleware(['userId', 'cycleId', 'programId', 'blockId', 'sessionId', 'exerciseId']),
     async (req, res) => {
         const block = await blockRepo.findOne({
-            where: { id: req.params.blockId, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
+            where: { id: req.params.blockId, cycleId: req.cycle_id }
         });
         if (!block) {
             res.status(404).send(null);
@@ -144,4 +100,29 @@ router.get('/:blockId/overview',
         res.status(200).json(overview);
     });
 
-router.use('/:blockId/sessions', Sessions);
+// =============== Sessions Routes ===============
+
+const sessionRepo = AppDataSource.getRepository(Session);
+
+
+router.get('/:blockId/sessions',
+    async (req, res) => {
+        const sessionList = await sessionRepo.find({
+            where: { blockId: req.params.blockId }
+        });
+
+        res.status(200).json(sessionList);
+    });
+
+router.post('/:blockId/sessions',
+    async (req, res) => {
+        let session = new Session();
+        session.name = req.body.name;
+        session.description = req.body.description;
+        session.blockId = req.params.blockId;
+        session.completed = req.body.completed; // Defaults to false if not provided
+
+
+        await sessionRepo.save(session);
+        res.status(201).json(session);
+    });

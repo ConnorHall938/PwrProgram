@@ -1,10 +1,8 @@
 import * as Express from 'express';
-import { AppDataSource } from "../data-source"
-import { Cycle } from "../entity/cycle"
-import { get_user_from_request } from '../session-store'
-import { UnauthorizedException } from '../errors/unauthorizederror'
-import { removeFieldsMiddleware } from '../../middleware/removeFields';
-import Blocks from './blocks';
+import { AppDataSource } from "../data-source";
+import { Cycle } from "../entity/cycle";
+import { UnauthorizedException } from '../errors/unauthorizederror';
+import { Block } from '../entity/block';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -29,7 +27,7 @@ const cycleRepo = AppDataSource.getRepository(Cycle);
 router.get('/:id',
     async (req, res) => {
         const cycle = await cycleRepo.findOne({
-            where: { id: req.params.id, userId: req.user_id, programId: req.program_id }
+            where: { id: req.params.id, programId: req.program_id }
         });
         if (!cycle) {
             res.status(404).send(null);
@@ -38,46 +36,10 @@ router.get('/:id',
         res.status(200).json(cycle);
     });
 
-
-router.get('/', async (req, res) => {
-    const cycleList = await cycleRepo.find({
-        where: { userId: req.user_id, programId: req.program_id }
-    });
-    const cleanedList = cycleList.map(({ id, userId, programId, ...rest }) => rest);
-
-    res.status(200).json(cleanedList);
-});
-
-router.post('/', async (req, res) => {
-    let cycle = new Cycle();
-    cycle.name = req.body.name;
-    cycle.description = req.body.description;
-    cycle.userId = req.user_id;
-    cycle.programId = req.program_id;
-    cycle.goals = req.body.goals || [];
-    cycle.completed = req.body.completed || false; // Default to false if not provided
-
-    // Get the user's most recent cycle
-    let mostRecentCycle = await cycleRepo.findOne({
-        where: { userId: req.user_id },
-        order: { id: "DESC" }
-    });
-
-    if (mostRecentCycle) {
-        cycle.id = mostRecentCycle.id + 1; // Increment id based on the last cycle
-    } else {
-        cycle.id = 1; // First cycle for the user
-    }
-
-    await cycleRepo.save(cycle);
-    res.status(201).json(cycle);
-});
-
 router.patch('/:id',
-    removeFieldsMiddleware(['userId', 'programId']),
     async (req, res) => {
         const cycle = await cycleRepo.findOne({
-            where: { id: req.params.id, userId: req.user_id, programId: req.program_id }
+            where: { id: req.params.id }
         });
         if (!cycle) {
             res.status(404).send(null);
@@ -88,10 +50,34 @@ router.patch('/:id',
         cycle.name = req.body.name || cycle.name;
         cycle.description = req.body.description || cycle.description;
         cycle.completed = req.body.completed || cycle.completed;
-        cycle.goals = req.body.goals || cycle.goals;
+        cycle.goals = Array.isArray(req.body.goals) ? req.body.goals : cycle.goals;
 
         await cycleRepo.save(cycle);
         res.status(200).json(cycle);
     });
 
-router.use('/:cycleId/blocks', Blocks);
+// =============== Blocks Routes ===============
+
+const blockRepo = AppDataSource.getRepository(Block);
+
+router.get('/:cycleId/blocks',
+    async (req, res) => {
+        const blockList = await blockRepo.find({
+            where: { cycleId: req.params.cycleId }
+        });
+
+        res.status(200).json(blockList);
+    });
+
+router.post('/:cycleId/blocks',
+    async (req, res) => {
+        let block = new Block();
+        block.name = req.body.name;
+        block.description = req.body.description;
+        block.sessions_per_week = req.body.sessions_per_week; // Default to 4 if not provided
+        block.cycleId = req.params.cycleId;
+        block.goals = Array.isArray(req.body.goals) ? req.body.goals : [];
+
+        await blockRepo.save(block);
+        res.status(201).json(block);
+    });

@@ -1,62 +1,48 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from "typeorm"
+import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
 import { Exercise } from "./exercise"
 
 @Entity()
 export class Set {
-    @PrimaryColumn()
-    id: number
+    @PrimaryGeneratedColumn('uuid')
+    id: string
 
-    @PrimaryColumn()
-    userId: number
-
-    @PrimaryColumn()
-    programId: number
-
-    @PrimaryColumn()
-    cycleId: number
-
-    @PrimaryColumn()
-    blockId: number
-
-    @PrimaryColumn()
-    sessionId: number
-
-    @PrimaryColumn()
-    exerciseId: number
+    @Column()
+    exerciseId: string
 
     @ManyToOne(() => Exercise, (exercise) => exercise.sets)
+    @JoinColumn({ name: 'exerciseId' })  // explicitly link FK column
     exercise: Exercise
 
     @Column({ nullable: true })
-    target_reps: number
+    target_reps?: number
 
     @Column({ nullable: true })
-    target_weight: number
+    target_weight?: number
 
     @Column({ nullable: true })
-    target_percentage: number
+    target_percentage?: number
 
     @Column({ nullable: true })
-    target_rpe: number
+    target_rpe?: number
 
     @Column({ nullable: true })
-    actual_reps: number
+    actual_reps?: number
 
     @Column({ nullable: true })
-    actual_weight: number
+    actual_weight?: number
 
     @Column({ nullable: true })
-    actual_rpe: number
+    actual_rpe?: number
 
     @Column({ nullable: false })
-    completed: boolean
+    completed?: boolean
 
     @Column({ nullable: true })
-    rest: number
+    rest?: number
 
     @Column({ nullable: true })
-    tempo: string
+    tempo?: string
 
     @Column({ nullable: true })
-    notes: string
+    notes?: string
 }

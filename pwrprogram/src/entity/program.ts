@@ -1,27 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, ManyToOne, OneToMany } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, ManyToOne, OneToMany, JoinColumn } from "typeorm"
 import { User } from "./User"
 import { Cycle } from "./cycle"
 
 @Entity()
 export class Program {
-    @PrimaryColumn()
-    id: number
+    @PrimaryGeneratedColumn('uuid')
+    id: string
 
-    @PrimaryColumn()
-    userId: number
+    @Column()
+    userId: string
 
     @Column({
         nullable: true
     })
-    coachId?: number
+    coachId?: string
 
     @Column()
     name: string
 
     @Column({ nullable: true })
-    description: string
+    description?: string
 
     @ManyToOne(() => User, (user) => user.programs)
+    @JoinColumn({ name: 'userId' })  // explicitly link FK column
     user: User
 
     @OneToMany(() => Cycle, (cycle) => cycle.program)

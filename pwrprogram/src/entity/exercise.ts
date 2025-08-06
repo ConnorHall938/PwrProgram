@@ -1,42 +1,31 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from "typeorm"
+import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
 import { Session } from "./session"
 import { Set } from "./set"
 
 @Entity()
 export class Exercise {
-    @PrimaryColumn()
-    id: number
+    @PrimaryGeneratedColumn('uuid')
+    id: string
 
-    @PrimaryColumn()
-    userId: number
-
-    @PrimaryColumn()
-    programId: number
-
-    @PrimaryColumn()
-    cycleId: number
-
-    @PrimaryColumn()
-    blockId: number
-
-    @PrimaryColumn()
-    sessionId: number
+    @Column()
+    sessionId: string
 
     @Column()
     name: string
 
     @Column({ nullable: true })
-    description: string
+    description?: string
 
-    @Column({ nullable: false })
+    @Column({ default: false })
     completed: boolean
 
     @Column({ nullable: true })
-    tutorial_url: string
+    tutorial_url?: string
 
     @ManyToOne(() => Session, (session) => session.exercises)
+    @JoinColumn({ name: 'sessionId' })  // explicitly link FK column
     session: Session
 
     @OneToMany(() => Set, (set) => set.exercise)
-    sets: Set
+    sets: Set[];
 }
