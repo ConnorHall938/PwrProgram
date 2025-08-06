@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, ManyToOne, OneToMany, JoinColumn } from "typeorm"
 import { User } from "./User"
 import { Cycle } from "./cycle"
+import { ProgramDTO } from '@pwrprogram/shared'
 
 @Entity()
 export class Program {
@@ -28,3 +29,4 @@ export class Program {
     @OneToMany(() => Cycle, (cycle) => cycle.program)
     cycles: Cycle[]
 }
+

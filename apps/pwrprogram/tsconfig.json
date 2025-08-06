@@ -1,8 +1,12 @@
 {
    "compilerOptions": {
+      "baseUrl": ".",
       "lib": [
          "es6"
       ],
+      "paths": {
+         "@pwrprogram/shared": ["../../packages/shared/src"]
+      },
       "target": "es6",
       "module": "commonjs",
       "moduleResolution": "node",

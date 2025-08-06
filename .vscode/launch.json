@@ -11,9 +11,9 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/ts-node",
+            "runtimeExecutable": "${workspaceRoot}/apps/pwrprogram/node_modules/.bin/ts-node",
             "runtimeArgs": [],
-            "program": "${workspaceFolder}\\pwrprogram\\src\\index.ts"
+            "program": "${workspaceFolder}\\apps\\pwrprogram\\src\\index.ts"
         },
         {
             "type": "node",
@@ -22,12 +22,12 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/nodemon",
+            "runtimeExecutable": "${workspaceRoot}/apps/pwrprogram/node_modules/.bin/nodemon",
             "runtimeArgs": [
                 "--exec",
-                "${workspaceRoot}/node_modules/.bin/ts-node"
+                "${workspaceRoot}/apps/pwrprogram/node_modules/.bin/ts-node"
             ],
-            "program": "${workspaceFolder}\\pwrprogram\\src\\index.ts"
+            "program": "${workspaceFolder}\\apps\\pwrprogram\\src\\index.ts"
         }
     ]
 }
