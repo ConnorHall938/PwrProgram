@@ -12,5 +12,7 @@ export class ProgramDTO {
     _links?: {
         self: string;
         cycles: string;
+        coach?: string;
+        user: string;
     };
 }
