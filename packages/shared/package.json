@@ -1,4 +1,8 @@
 {
   "name": "@pwrprogram/shared",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "class-transformer": "^0.5.1"
+  }
 }

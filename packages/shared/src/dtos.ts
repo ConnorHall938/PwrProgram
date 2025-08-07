@@ -1,12 +1,4 @@
 
-export interface ProgramDTO {
-    id: string;
-    userId: string;
-    name: string;
-    description: string;
-    completed: boolean;
-}
-
 export interface CycleDTO {
     id: string;
     programId: string;
@@ -14,6 +6,7 @@ export interface CycleDTO {
     description?: string;
     goals?: string[];
     completed: boolean;
+    _links?: ResourceLinks;
 }
 
 export interface BlockDTO {
@@ -24,6 +17,7 @@ export interface BlockDTO {
     completed: boolean;
     goals?: string[];
     sessions_per_week: number;
+    _links?: ResourceLinks;
 }
 
 export interface SessionDTO {
@@ -32,6 +26,7 @@ export interface SessionDTO {
     name: string;
     description?: string;
     completed: boolean;
+    _links?: ResourceLinks;
 }
 
 export interface ExerciseDTO {
@@ -41,6 +36,7 @@ export interface ExerciseDTO {
     description?: string;
     completed: boolean;
     tutorial_url?: string;
+    _links?: ResourceLinks;
 }
 
 export interface SetDTO {
@@ -57,4 +53,11 @@ export interface SetDTO {
     tempo?: string; // Format "0:0:0"
     rest?: number; // In seconds
     notes?: string;
+    _links?: ResourceLinks;
+}
+
+// shared/dto/common.ts
+export interface ResourceLinks {
+    self: string;
+    [key: string]: string;
 }

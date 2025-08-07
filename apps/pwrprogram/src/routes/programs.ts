@@ -4,6 +4,9 @@ import { Program } from "../entity/program"
 import { get_user_from_request } from '../session-store'
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { Cycle } from '../entity/cycle';
+import { plainToInstance } from 'class-transformer';
+import { ProgramDTO } from '@pwrprogram/shared';
+import { toProgramDTO } from '../mappers/program.mapper';
 
 const router = Express.Router()
 
@@ -30,15 +33,17 @@ const progRepo = AppDataSource.getRepository(Program)
 
 router.get('/:id',
     async (req, res) => {
-        const user = await progRepo.findOne({
+        const program = await progRepo.findOne({
             where: { id: req.params.id, userId: req.user_id }
         }
         )
-        if (!user) {
+        if (!program) {
             res.status(404).send(null);
             return;
         }
-        res.status(200).json(user)
+        // Convert to DTO
+        const dto = toProgramDTO(program);
+        res.status(200).json(dto);
     });
 
 router.get('/',
@@ -46,7 +51,7 @@ router.get('/',
         const programList = await progRepo.find({
             where: { userId: req.user_id }
         });
-        res.status(200).json(programList)
+        res.status(200).json(programList.map(toProgramDTO));
     });
 
 router.post('/', async (req, res) => {
