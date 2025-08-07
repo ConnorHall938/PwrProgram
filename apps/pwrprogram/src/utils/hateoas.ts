@@ -6,7 +6,9 @@ export function withProgramLinks(dto: ProgramDTO): ProgramDTO {
         ...dto,
         _links: {
             self: `/api/programs/${dto.id}`,
-            cycles: `/api/programs/${dto.id}/cycles`
+            cycles: `/api/programs/${dto.id}/cycles`,
+            coach: dto.coachId ? `/api/users/${dto.coachId}` : undefined,
+            user: `/api/users/${dto.userId}`
         }
     };
 }
