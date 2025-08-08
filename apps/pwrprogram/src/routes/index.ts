@@ -1,22 +1,23 @@
 import base from './base';
-import users from './users';
-import programs from './programs'
-import sets from './sets';
-import exercises from './exercises';
-import cycles from './cycles';
-import blocks from './blocks';
-import sessions from './sessions';
+import { usersRouter } from './users';
+import { AppDataSource } from '../data-source';
+import { programsRouter } from './programs';
+import { setsRouter } from './sets';
+import { exercisesRouter } from './exercises';
+import { cyclesRouter } from './cycles';
+import { blocksRouter } from './blocks';
+import { sessionsRouter } from './sessions';
 
 
-const mountRoutes = (app) => {
+const mountRoutes = (app, dataSource) => {
     app.use('/api', base);
-    app.use('/api/users', users);
-    app.use('/api/programs', programs);
-    app.use('/api/cycles', cycles);
-    app.use('/api/blocks', blocks);
-    app.use('/api/sessions', sessions);
-    app.use('/api/exercises', exercises);
-    app.use('/api/sets', sets);
+    app.use('/api/users', usersRouter(dataSource));
+    app.use('/api/programs', programsRouter(dataSource));
+    app.use('/api/cycles', cyclesRouter(dataSource));
+    app.use('/api/blocks', blocksRouter(dataSource));
+    app.use('/api/sessions', sessionsRouter(dataSource));
+    app.use('/api/exercises', exercisesRouter(dataSource));
+    app.use('/api/sets', setsRouter(dataSource));
 };
 
 export default mountRoutes;

@@ -8,6 +8,6 @@ export default {
         }]
     },
     moduleFileExtensions: ['ts', 'js'],
-    setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
+    setupFilesAfterEnv: ['<rootDir>/src/testing/setup.ts'],
     testTimeout: 10000 // Some DB operations might take time
 };

@@ -1,8 +1,8 @@
+
 import * as Express from 'express';
-import { AppDataSource } from "../data-source"
-import { Program } from "../entity/program"
-import { get_user_from_request } from '../session-store'
-import { UnauthorizedException } from '../errors/unauthorizederror'
+import { Program } from "../entity/program";
+import { get_user_from_request } from '../session-store';
+import { UnauthorizedException } from '../errors/unauthorizederror';
 import { Cycle } from '../entity/cycle';
 import { CycleDTO } from '@pwrprogram/shared';
 import { toCycleDTO } from '../mappers/cycle.mapper';
@@ -11,35 +11,30 @@ import { ProgramDTO, CreateProgramDTO, UpdateProgramDTO } from '@pwrprogram/shar
 import { toProgramDTO } from '../mappers/program.mapper';
 import { validateRequest } from '../middleware/validation.middleware';
 
-const router = Express.Router()
-const progRepo = AppDataSource.getRepository(Program)
-export default router
+export function programsRouter(dataSource): Express.Router {
+    const router = Express.Router();
+    const progRepo = dataSource.getRepository(Program);
 
-
-//Attach userID from cookie
-router.use(function (req, res, next) {
-    try {
-        let user_id = get_user_from_request(req);
-
-        req.user_id = user_id;
-        next();
-    }
-    catch (err) {
-        if (err instanceof UnauthorizedException) {
-            res.status(err.code).json({ message: "Unauthorized. Please log in." });
+    //Attach userID from cookie
+    router.use(function (req, res, next) {
+        try {
+            let user_id = get_user_from_request(req);
+            req.user_id = user_id;
+            next();
         }
-        else
-            throw err;
-    }
-});
+        catch (err) {
+            if (err instanceof UnauthorizedException) {
+                res.status(err.code).json({ message: "Unauthorized. Please log in." });
+            }
+            else
+                throw err;
+        }
+    });
 
-
-router.get('/:id',
-    async (req, res) => {
+    router.get('/:id', async (req, res) => {
         const program = await progRepo.findOne({
             where: { id: req.params.id, userId: req.user_id }
-        }
-        )
+        });
         if (!program) {
             res.status(404).send(null);
             return;
@@ -49,35 +44,37 @@ router.get('/:id',
         res.status(200).json(dto);
     });
 
-router.get('/',
-    async (req, res) => {
+    router.get('/', async (req, res) => {
         const programList = await progRepo.find({
             where: { userId: req.user_id }
         });
         res.status(200).json(programList.map(toProgramDTO));
     });
 
-router.post('/', validateRequest(CreateProgramDTO), async (req, res) => {
-    let program = new Program();
-    program.name = req.body.name;
-    program.description = req.body.description;
-    program.userId = req.user_id;
-    program.coachId = req.body.coachId;
+    router.post('/', validateRequest(CreateProgramDTO), async (req, res) => {
+        let program = new Program();
+        program.name = req.body.name;
+        program.description = req.body.description;
+        program.userId = req.user_id;
+        program.coachId = req.body.coachId;
 
-    progRepo.save(program).then(
-        function () {
-            res.status(201).json(program);
-        }
-    ).catch(
-        error => {
-            if (error.code === '23505') {
-                res.status(400).json({ message: "Duplicate email entered" })
+        progRepo.save(program).then(
+            function () {
+                res.status(201).json(program);
             }
-            else {
-                console.log(error);
-                res.status(500).json({ message: "Internal server error" });
+        ).catch(
+            error => {
+                if (error.code === '23505') {
+                    res.status(400).json({ message: "Duplicate email entered" })
+                }
+                else {
+                    console.log(error);
+                    res.status(500).json({ message: "Internal server error" });
+                }
             }
-        }
-    )
-});
+        )
+    });
+
+    return router;
+}
 

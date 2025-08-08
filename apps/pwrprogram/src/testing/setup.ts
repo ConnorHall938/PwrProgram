@@ -1,4 +1,5 @@
-import { testDataSource } from './test-data-source';
+import { testDataSource } from './utils/test-data-source';
+import { createApp } from '../index';
 import { Set } from '../entity/set';
 import { Exercise } from '../entity/exercise';
 import { Session } from '../entity/session';
@@ -6,6 +7,9 @@ import { Block } from '../entity/block';
 import { Cycle } from '../entity/cycle';
 import { Program } from '../entity/program';
 import { User } from '../entity/User';
+
+// Create and export the test app instance
+export const app = createApp(testDataSource);
 
 beforeAll(async () => {
     // Only initialize if not already initialized

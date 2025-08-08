@@ -1,10 +1,9 @@
-import { testDataSource } from './test-data-source';
-import { User } from '../entity/User';
+import { testDataSource } from '../../utils/test-data-source';
+import { User } from '../../../entity/User';
 import { Repository } from 'typeorm';
 import * as supertest from 'supertest';
-import { app } from '../index';
 import { CreateUserDTO } from '@pwrprogram/shared';
-
+import { app } from '../../setup';
 const request = supertest.default(app);
 
 describe('User API', () => {
@@ -29,11 +28,7 @@ describe('User API', () => {
         const response = await request
             .post('/api/users')
             .send(createUserDto)
-
-        if (response.status != 201) {
-            console.error('Failed to create user:', response.body);
-            throw new Error(`User creation failed: ${JSON.stringify(response.body)}`);
-        }
+            .expect(201);
 
         // Verify response
         expect(response.body).toHaveProperty('id');

@@ -1,6 +1,6 @@
+
 import * as Express from 'express';
-import { AppDataSource } from "../data-source"
-import { UnauthorizedException } from '../errors/unauthorizederror'
+import { UnauthorizedException } from '../errors/unauthorizederror';
 import { Block } from '../entity/block';
 import { BlockDTO, CreateBlockDTO, UpdateBlockDTO } from '@pwrprogram/shared';
 import { toBlockDTO } from '../mappers/block.mapper';
@@ -9,28 +9,25 @@ import { Session } from '../entity/session';
 import { SessionDTO } from '@pwrprogram/shared';
 import { toSessionDTO } from '../mappers/session.mapper';
 
-const router = Express.Router({ mergeParams: true });
-const blockRepo = AppDataSource.getRepository(Block);
-export default router
+export function blocksRouter(dataSource): Express.Router {
+    const router = Express.Router({ mergeParams: true });
+    const blockRepo = dataSource.getRepository(Block);
 
-// Get Cycle ID from request parameters
-router.use(function (req, res, next) {
-    try {
-        req.cycle_id = req.params.cycleId;
-        next();
-    } catch (err) {
-        if (err instanceof UnauthorizedException) {
-            res.status(err.code).json({ message: "Missing cycle ID." });
-        } else {
-            throw err;
+    // Get Cycle ID from request parameters
+    router.use(function (req, res, next) {
+        try {
+            req.cycle_id = req.params.cycleId;
+            next();
+        } catch (err) {
+            if (err instanceof UnauthorizedException) {
+                res.status(err.code).json({ message: "Missing cycle ID." });
+            } else {
+                throw err;
+            }
         }
-    }
-});
+    });
 
-
-
-router.get('/:id',
-    async (req, res) => {
+    router.get('/:id', async (req, res) => {
         try {
             const block = await blockRepo.findOne({
                 where: { id: req.params.id, cycleId: req.cycle_id }
@@ -53,9 +50,7 @@ router.get('/:id',
         }
     });
 
-router.patch('/:id',
-    validateRequest(UpdateBlockDTO),
-    async (req, res) => {
+    router.patch('/:id', validateRequest(UpdateBlockDTO), async (req, res) => {
         try {
             const block = await blockRepo.findOne({
                 where: { id: req.params.id, cycleId: req.cycle_id }
@@ -83,59 +78,14 @@ router.patch('/:id',
         }
     });
 
-router.get('/:blockId/overview',
-    async (req, res) => {
-        const block = await blockRepo.findOne({
-            where: { id: req.params.blockId, cycleId: req.cycle_id }
-        });
-        if (!block) {
-            res.status(404).send(null);
-            return;
-        }
-        //Get all the sessions for this block
-        const sessions = await AppDataSource.getRepository('Session').find({
-            where: { blockId: req.params.blockId, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
-        });
-
-        //Attach each session's exercises and sets
-        for (const session of sessions) {
-            const exercises = await AppDataSource.getRepository('Exercise').find({
-                where: { sessionId: session.id, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
-            });
-            session.exercises = exercises;
-
-            for (const exercise of exercises) {
-                const sets = await AppDataSource.getRepository('Set').find({
-                    where: { exerciseId: exercise.id, sessionId: session.id, userId: req.user_id, cycleId: req.cycle_id, programId: req.program_id }
-                });
-                exercise.sets = sets;
-            }
-        }
-
-        const overview = {
-
-            id: block.id,
-            name: block.name,
-            description: block.description,
-            goals: block.goals,
-            completed: block.completed,
-            sessions_per_week: block.sessions_per_week,
-            sessions: sessions
-        };
-
-        res.status(200).json(overview);
-    });
-
-router.get('/:cycleId/blocks',
-    async (req, res) => {
+    router.get('/:cycleId/blocks', async (req, res) => {
         const blockList = await blockRepo.find({
             where: { cycleId: req.params.cycleId }
         });
         res.status(200).json(blockList.map(toBlockDTO));
     });
 
-router.post('/:cycleId/blocks',
-    async (req, res) => {
+    router.post('/:cycleId/blocks', async (req, res) => {
         let block = new Block();
         block.name = req.body.name;
         block.description = req.body.description;
@@ -147,3 +97,6 @@ router.post('/:cycleId/blocks',
         const dto = toBlockDTO(block);
         res.status(201).json(dto);
     });
+
+    return router;
+}
