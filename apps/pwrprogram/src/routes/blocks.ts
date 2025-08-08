@@ -10,6 +10,8 @@ import { SessionDTO } from '@pwrprogram/shared';
 import { toSessionDTO } from '../mappers/session.mapper';
 
 const router = Express.Router({ mergeParams: true });
+const blockRepo = AppDataSource.getRepository(Block);
+export default router
 
 // Get Cycle ID from request parameters
 router.use(function (req, res, next) {
@@ -25,9 +27,7 @@ router.use(function (req, res, next) {
     }
 });
 
-export default router
 
-const blockRepo = AppDataSource.getRepository(Block);
 
 router.get('/:id',
     async (req, res) => {
@@ -126,27 +126,24 @@ router.get('/:blockId/overview',
         res.status(200).json(overview);
     });
 
-// =============== Sessions Routes ===============
-
-const sessionRepo = AppDataSource.getRepository(Session);
-
-router.get('/:blockId/sessions',
+router.get('/:cycleId/blocks',
     async (req, res) => {
-        const sessionList = await sessionRepo.find({
-            where: { blockId: req.params.blockId }
+        const blockList = await blockRepo.find({
+            where: { cycleId: req.params.cycleId }
         });
-        res.status(200).json(sessionList.map(toSessionDTO));
+        res.status(200).json(blockList.map(toBlockDTO));
     });
 
-router.post('/:blockId/sessions',
+router.post('/:cycleId/blocks',
     async (req, res) => {
-        let session = new Session();
-        session.name = req.body.name;
-        session.description = req.body.description;
-        session.blockId = req.params.blockId;
-        session.completed = req.body.completed; // Defaults to false if not provided
+        let block = new Block();
+        block.name = req.body.name;
+        block.description = req.body.description;
+        block.sessions_per_week = req.body.sessions_per_week; // Default to 4 if not provided
+        block.cycleId = req.params.cycleId;
+        block.goals = Array.isArray(req.body.goals) ? req.body.goals : [];
 
-        await sessionRepo.save(session);
-        const dto = toSessionDTO(session);
+        await blockRepo.save(block);
+        const dto = toBlockDTO(block);
         res.status(201).json(dto);
     });

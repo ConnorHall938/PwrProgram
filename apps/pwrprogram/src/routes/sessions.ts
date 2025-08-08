@@ -10,6 +10,8 @@ import { validateRequest } from '../middleware/validation.middleware';
 import { toExerciseDTO } from '../mappers/exercise.mapper';
 
 const router = Express.Router({ mergeParams: true });
+const sessionRepo = AppDataSource.getRepository(Session);
+export default router;
 
 // Get Block ID from request parameters
 router.use(function (req, res, next) {
@@ -28,8 +30,7 @@ router.use(function (req, res, next) {
     }
 });
 
-const sessionRepo = AppDataSource.getRepository(Session);
-const exerciseRepo = AppDataSource.getRepository(Exercise);
+
 
 // Get session by ID
 router.get('/:id', async (req, res) => {
@@ -81,70 +82,23 @@ router.patch('/:id', validateRequest(UpdateSessionDTO), async (req, res) => {
     }
 });
 
-// Create new exercise in session
-router.post('/:sessionId/exercises', validateRequest(CreateExerciseDTO), async (req, res) => {
-    try {
-        const session = await sessionRepo.findOne({
-            where: { id: req.params.sessionId, blockId: req.block_id }
-        });
-
-        if (!session) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'Session not found'
-            });
-        }
-
-        const exercise = new Exercise();
-        exerciseRepo.merge(exercise, req.body);
-        exercise.sessionId = session.id;
-
-        await exerciseRepo.save(exercise);
-
-        const dto = toExerciseDTO(exercise);
-        res.status(201).json(dto);
-    } catch (error) {
-        console.error('Error creating exercise:', error);
-        res.status(500).json({
-            status: 'error',
-            message: 'Failed to create exercise'
-        });
-    }
+router.get('/:blockId/sessions', async (req, res) => {
+    const sessionList = await sessionRepo.find({
+        where: { blockId: req.params.blockId }
+    });
+    res.status(200).json(sessionList.map(toSessionDTO));
 });
 
-// Get session overview with exercises
-router.get('/:sessionId/overview', async (req, res) => {
-    try {
-        const session = await sessionRepo.findOne({
-            where: { id: req.params.sessionId, blockId: req.block_id }
-        });
-        if (!session) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'Session not found'
-            });
-        }
+router.post('/:blockId/sessions', async (req, res) => {
+    let session = new Session();
+    session.name = req.body.name;
+    session.description = req.body.description;
+    session.blockId = req.params.blockId;
+    session.completed = req.body.completed; // Defaults to false if not provided
 
-        const exercises = await exerciseRepo.find({
-            where: { sessionId: session.id }
-        });
-
-        const overview = {
-            id: session.id,
-            name: session.name,
-            description: session.description,
-            completed: session.completed,
-            exercises: exercises.map(toExerciseDTO)
-        };
-
-        res.status(200).json(overview);
-    } catch (error) {
-        console.error('Error fetching session overview:', error);
-        res.status(500).json({
-            status: 'error',
-            message: 'Failed to fetch session overview'
-        });
-    }
+    await sessionRepo.save(session);
+    const dto = toSessionDTO(session);
+    res.status(201).json(dto);
 });
 
-export default router;
+

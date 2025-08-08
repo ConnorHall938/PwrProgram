@@ -9,6 +9,8 @@ import { BlockDTO } from '@pwrprogram/shared';
 import { toBlockDTO } from '../mappers/block.mapper';
 
 const router = Express.Router({ mergeParams: true });
+const cycleRepo = AppDataSource.getRepository(Cycle);
+export default router;
 
 // Get program ID from request parameters
 router.use(function (req, res, next) {
@@ -24,9 +26,6 @@ router.use(function (req, res, next) {
     }
 });
 
-export default router
-
-const cycleRepo = AppDataSource.getRepository(Cycle);
 
 router.get('/:id',
     async (req, res) => {
@@ -64,28 +63,26 @@ router.patch('/:id',
         res.status(200).json(dto);
     });
 
-// =============== Blocks Routes ===============
 
-const blockRepo = AppDataSource.getRepository(Block);
+router.post('/:programId/cycles', async (req, res) => {
+    let cycle = new Cycle();
+    cycle.programId = req.params.programId;
+    cycle.name = req.body.name;
+    cycle.description = req.body.description;
+    cycle.goals = Array.isArray(req.body.goals) ? req.body.goals : null;
+    cycle.completed = req.body.completed; // Defaults to false if not provided
 
-router.get('/:cycleId/blocks',
-    async (req, res) => {
-        const blockList = await blockRepo.find({
-            where: { cycleId: req.params.cycleId }
-        });
-        res.status(200).json(blockList.map(toBlockDTO));
+    await cycleRepo.save(cycle);
+    // Convert to DTO
+    const dto = toCycleDTO(cycle);
+    res.status(201).json(dto);
+});
+
+router.get('/:programId/cycles', async (req, res) => {
+    const cycleList = await cycleRepo.find({
+        where: { programId: req.params.programId }
     });
+    // Convert to DTOs
+    res.status(200).json(cycleList.map(toCycleDTO));
+});
 
-router.post('/:cycleId/blocks',
-    async (req, res) => {
-        let block = new Block();
-        block.name = req.body.name;
-        block.description = req.body.description;
-        block.sessions_per_week = req.body.sessions_per_week; // Default to 4 if not provided
-        block.cycleId = req.params.cycleId;
-        block.goals = Array.isArray(req.body.goals) ? req.body.goals : [];
-
-        await blockRepo.save(block);
-        const dto = toBlockDTO(block);
-        res.status(201).json(dto);
-    });

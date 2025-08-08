@@ -2,10 +2,13 @@ import * as Express from 'express';
 import { AppDataSource } from "../data-source"
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { Set } from '../entity/set';
-import { SetDTO } from '@pwrprogram/shared';
+import { SetDTO, CreateSetDTO } from '@pwrprogram/shared';
 import { toSetDTO } from '../mappers/set.mapper';
+import { validateRequest } from '../middleware/validation.middleware';
 
 const router = Express.Router({ mergeParams: true });
+const setRepo = AppDataSource.getRepository(Set);
+export default router
 
 // Get Exercise ID from request parameters
 router.use(function (req, res, next) {
@@ -21,9 +24,51 @@ router.use(function (req, res, next) {
     }
 });
 
-export default router
 
-const setRepo = AppDataSource.getRepository(Set);
+router.post('/:exerciseId/sets', validateRequest(CreateSetDTO), async (req, res) => {
+    try {
+        const exercise = await AppDataSource.getRepository('Exercise').findOne({
+            where: { id: req.params.exerciseId, sessionId: req.session_id }
+        });
+
+        if (!exercise) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Exercise not found'
+            });
+        }
+
+        let set = new Set();
+        setRepo.merge(set, req.body);
+        set.exerciseId = exercise.id;
+
+        await setRepo.save(set);
+
+        const dto = toSetDTO(set);
+        res.status(201).json(dto);
+    } catch (error) {
+        console.error('Error creating set:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to create set'
+        });
+    }
+});
+
+router.get('/:exerciseId/sets', async (req, res) => {
+    try {
+        const setList = await setRepo.find({
+            where: { exerciseId: req.params.exerciseId }
+        });
+        res.status(200).json(setList.map(toSetDTO));
+    } catch (error) {
+        console.error('Error fetching sets:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to fetch sets'
+        });
+    }
+});
 
 router.get('/:id',
     async (req, res) => {

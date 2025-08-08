@@ -10,6 +10,9 @@ import { validateRequest } from '../middleware/validation.middleware';
 import { toSetDTO } from '../mappers/set.mapper';
 
 const router = Express.Router({ mergeParams: true });
+const exerciseRepo = AppDataSource.getRepository(Exercise);
+export default router
+
 
 // Get Session ID from request parameters
 router.use(function (req, res, next) {
@@ -25,9 +28,7 @@ router.use(function (req, res, next) {
     }
 });
 
-export default router
 
-const exerciseRepo = AppDataSource.getRepository(Exercise);
 
 router.get('/:id',
     async (req, res) => {
@@ -83,6 +84,41 @@ router.patch('/:id',
         }
     });
 
+// Create new exercise in session
+router.post('/:sessionId/exercises', validateRequest(CreateExerciseDTO), async (req, res) => {
+    try {
+        const exercise = new Exercise();
+        exerciseRepo.merge(exercise, req.body);
+        exercise.sessionId = req.params.sessionId;
+
+        await exerciseRepo.save(exercise);
+
+        const dto = toExerciseDTO(exercise);
+        res.status(201).json(dto);
+    } catch (error) {
+        console.error('Error creating exercise:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to create exercise'
+        });
+    }
+});
+
+router.get('/:sessionId/exercises', async (req, res) => {
+    try {
+        const exercises = await exerciseRepo.find({
+            where: { sessionId: req.params.sessionId }
+        });
+        res.status(200).json(exercises.map(toExerciseDTO));
+    } catch (error) {
+        console.error('Error fetching exercises:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to fetch exercises'
+        });
+    }
+});
+
 router.get('/:exerciseId/overview',
     async (req, res) => {
         try {
@@ -119,54 +155,3 @@ router.get('/:exerciseId/overview',
         }
     });
 
-// =============== Sets Routes ===============
-
-const setRepo = AppDataSource.getRepository(Set);
-
-router.post('/:exerciseId/sets',
-    validateRequest(CreateSetDTO),
-    async (req, res) => {
-        try {
-            const exercise = await exerciseRepo.findOne({
-                where: { id: req.params.exerciseId, sessionId: req.session_id }
-            });
-
-            if (!exercise) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: 'Exercise not found'
-                });
-            }
-
-            let set = new Set();
-            setRepo.merge(set, req.body);
-            set.exerciseId = exercise.id;
-
-            await setRepo.save(set);
-
-            const dto = toSetDTO(set);
-            res.status(201).json(dto);
-        } catch (error) {
-            console.error('Error creating set:', error);
-            res.status(500).json({
-                status: 'error',
-                message: 'Failed to create set'
-            });
-        }
-    });
-
-router.get('/:exerciseId/sets',
-    async (req, res) => {
-        try {
-            const setList = await setRepo.find({
-                where: { exerciseId: req.params.exerciseId }
-            });
-            res.status(200).json(setList.map(toSetDTO));
-        } catch (error) {
-            console.error('Error fetching sets:', error);
-            res.status(500).json({
-                status: 'error',
-                message: 'Failed to fetch sets'
-            });
-        }
-    });

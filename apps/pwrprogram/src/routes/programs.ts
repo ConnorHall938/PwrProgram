@@ -12,6 +12,9 @@ import { toProgramDTO } from '../mappers/program.mapper';
 import { validateRequest } from '../middleware/validation.middleware';
 
 const router = Express.Router()
+const progRepo = AppDataSource.getRepository(Program)
+export default router
+
 
 //Attach userID from cookie
 router.use(function (req, res, next) {
@@ -30,9 +33,6 @@ router.use(function (req, res, next) {
     }
 });
 
-export default router
-
-const progRepo = AppDataSource.getRepository(Program)
 
 router.get('/:id',
     async (req, res) => {
@@ -81,29 +81,3 @@ router.post('/', validateRequest(CreateProgramDTO), async (req, res) => {
     )
 });
 
-
-// =============== Cycles Routes ===============
-
-const cycleRepo = AppDataSource.getRepository(Cycle);
-
-router.post('/:programId/cycles', async (req, res) => {
-    let cycle = new Cycle();
-    cycle.programId = req.params.programId;
-    cycle.name = req.body.name;
-    cycle.description = req.body.description;
-    cycle.goals = Array.isArray(req.body.goals) ? req.body.goals : null;
-    cycle.completed = req.body.completed; // Defaults to false if not provided
-
-    await cycleRepo.save(cycle);
-    // Convert to DTO
-    const dto = toCycleDTO(cycle);
-    res.status(201).json(dto);
-});
-
-router.get('/:programId/cycles', async (req, res) => {
-    const cycleList = await cycleRepo.find({
-        where: { programId: req.params.programId }
-    });
-    // Convert to DTOs
-    res.status(200).json(cycleList.map(toCycleDTO));
-});
