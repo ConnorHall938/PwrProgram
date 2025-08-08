@@ -1,4 +1,5 @@
 import { Expose } from 'class-transformer';
+import { IsString, IsOptional, IsBoolean, IsArray, IsNumber, Min, IsNotEmpty } from 'class-validator';
 
 export class BlockDTO {
     @Expose() id: string;
@@ -13,4 +14,52 @@ export class BlockDTO {
         cycle: string;
         sessions: string;
     };
+}
+
+export class CreateBlockDTO {
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    completed?: boolean;
+
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    goals?: string[];
+
+    @IsNumber()
+    @Min(1)
+    @IsOptional()
+    sessions_per_week?: number;
+}
+
+export class UpdateBlockDTO {
+    @IsString()
+    @IsOptional()
+    name?: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    completed?: boolean;
+
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    goals?: string[];
+
+    @IsNumber()
+    @Min(1)
+    @IsOptional()
+    sessions_per_week?: number;
 }

@@ -2,8 +2,9 @@ import * as Express from 'express';
 import { AppDataSource } from "../data-source"
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { Block } from '../entity/block';
-import { BlockDTO } from '@pwrprogram/shared';
+import { BlockDTO, CreateBlockDTO, UpdateBlockDTO } from '@pwrprogram/shared';
 import { toBlockDTO } from '../mappers/block.mapper';
+import { validateRequest } from '../middleware/validation.middleware';
 import { Session } from '../entity/session';
 import { SessionDTO } from '@pwrprogram/shared';
 import { toSessionDTO } from '../mappers/session.mapper';
@@ -30,39 +31,56 @@ const blockRepo = AppDataSource.getRepository(Block);
 
 router.get('/:id',
     async (req, res) => {
-        const block = await blockRepo.findOne({
-            where: { id: req.params.id, cycleId: req.cycle_id }
-        });
-        if (!block) {
-            res.status(404).send(null);
-            return;
+        try {
+            const block = await blockRepo.findOne({
+                where: { id: req.params.id, cycleId: req.cycle_id }
+            });
+            if (!block) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Block not found'
+                });
+            }
+            // Convert to DTO
+            const dto = toBlockDTO(block);
+            res.status(200).json(dto);
+        } catch (error) {
+            console.error('Error fetching block:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to fetch block'
+            });
         }
-        // Convert to DTO
-        const dto = toBlockDTO(block);
-        res.status(200).json(dto);
     });
 
 router.patch('/:id',
+    validateRequest(UpdateBlockDTO),
     async (req, res) => {
-        const block = await blockRepo.findOne({
-            where: { id: req.params.id, cycleId: req.cycle_id }
-        });
-        if (!block) {
-            res.status(404).send(null);
-            return;
+        try {
+            const block = await blockRepo.findOne({
+                where: { id: req.params.id, cycleId: req.cycle_id }
+            });
+            if (!block) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Block not found'
+                });
+            }
+
+            // Update fields using repository merge
+            blockRepo.merge(block, req.body);
+
+            await blockRepo.save(block);
+            // Convert to DTO
+            const dto = toBlockDTO(block);
+            res.status(200).json(dto);
+        } catch (error) {
+            console.error('Error updating block:', error);
+            res.status(500).json({
+                status: 'error',
+                message: 'Failed to update block'
+            });
         }
-
-        // Update fields
-        block.name = req.body.name || block.name;
-        block.description = req.body.description || block.description;
-        block.completed = req.body.completed || block.completed;
-        block.goals = req.body.goals || block.goals;
-        block.sessions_per_week = req.body.sessions_per_week || block.sessions_per_week;
-
-        await blockRepo.save(block);
-        // Convert to DTO
-        const dto = toBlockDTO(block);
-        res.status(200).json(dto);
     });
 
 router.get('/:blockId/overview',

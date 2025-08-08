@@ -7,8 +7,9 @@ import { Cycle } from '../entity/cycle';
 import { CycleDTO } from '@pwrprogram/shared';
 import { toCycleDTO } from '../mappers/cycle.mapper';
 import { plainToInstance } from 'class-transformer';
-import { ProgramDTO } from '@pwrprogram/shared';
+import { ProgramDTO, CreateProgramDTO, UpdateProgramDTO } from '@pwrprogram/shared';
 import { toProgramDTO } from '../mappers/program.mapper';
+import { validateRequest } from '../middleware/validation.middleware';
 
 const router = Express.Router()
 
@@ -56,7 +57,7 @@ router.get('/',
         res.status(200).json(programList.map(toProgramDTO));
     });
 
-router.post('/', async (req, res) => {
+router.post('/', validateRequest(CreateProgramDTO), async (req, res) => {
     let program = new Program();
     program.name = req.body.name;
     program.description = req.body.description;

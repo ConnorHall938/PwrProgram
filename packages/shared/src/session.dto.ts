@@ -1,4 +1,5 @@
 import { Expose } from 'class-transformer';
+import { IsString, IsOptional, IsBoolean, IsNotEmpty } from 'class-validator';
 
 export class SessionDTO {
     @Expose() id: string;
@@ -12,4 +13,32 @@ export class SessionDTO {
         block: string;
         exercises: string;
     };
+}
+
+export class CreateSessionDTO {
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    completed?: boolean;
+}
+
+export class UpdateSessionDTO {
+    @IsString()
+    @IsOptional()
+    name?: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    completed?: boolean;
 }

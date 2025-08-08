@@ -1,4 +1,5 @@
 import { Expose } from 'class-transformer';
+import { IsString, IsOptional, IsBoolean, IsArray, IsNotEmpty } from 'class-validator';
 
 export class CycleDTO {
     @Expose() id: string;
@@ -14,4 +15,42 @@ export class CycleDTO {
         program: string;
         blocks: string;
     };
+}
+
+export class CreateCycleDTO {
+    @IsString()
+    @IsNotEmpty()
+    name: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    completed?: boolean;
+
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    goals?: string[];
+}
+
+export class UpdateCycleDTO {
+    @IsString()
+    @IsOptional()
+    name?: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    completed?: boolean;
+
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    goals?: string[];
 }
