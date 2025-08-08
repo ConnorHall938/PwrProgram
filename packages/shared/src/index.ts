@@ -1,4 +1,3 @@
-export * from './dtos';
 export * from './program.dto'
 export * from './cycle.dto';
 export * from './block.dto';

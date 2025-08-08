@@ -1,8 +1,12 @@
 import * as Express from 'express';
 import { AppDataSource } from "../data-source";
 import { Cycle } from "../entity/cycle";
+import { CycleDTO } from '@pwrprogram/shared';
+import { toCycleDTO } from '../mappers/cycle.mapper';
 import { UnauthorizedException } from '../errors/unauthorizederror';
 import { Block } from '../entity/block';
+import { BlockDTO } from '@pwrprogram/shared';
+import { toBlockDTO } from '../mappers/block.mapper';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -33,7 +37,9 @@ router.get('/:id',
             res.status(404).send(null);
             return;
         }
-        res.status(200).json(cycle);
+        // Convert to DTO
+        const dto = toCycleDTO(cycle);
+        res.status(200).json(dto);
     });
 
 router.patch('/:id',
@@ -53,7 +59,9 @@ router.patch('/:id',
         cycle.goals = Array.isArray(req.body.goals) ? req.body.goals : cycle.goals;
 
         await cycleRepo.save(cycle);
-        res.status(200).json(cycle);
+        // Convert to DTO
+        const dto = toCycleDTO(cycle);
+        res.status(200).json(dto);
     });
 
 // =============== Blocks Routes ===============
@@ -65,8 +73,7 @@ router.get('/:cycleId/blocks',
         const blockList = await blockRepo.find({
             where: { cycleId: req.params.cycleId }
         });
-
-        res.status(200).json(blockList);
+        res.status(200).json(blockList.map(toBlockDTO));
     });
 
 router.post('/:cycleId/blocks',
@@ -79,5 +86,6 @@ router.post('/:cycleId/blocks',
         block.goals = Array.isArray(req.body.goals) ? req.body.goals : [];
 
         await blockRepo.save(block);
-        res.status(201).json(block);
+        const dto = toBlockDTO(block);
+        res.status(201).json(dto);
     });

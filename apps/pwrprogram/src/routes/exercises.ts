@@ -2,7 +2,11 @@ import * as Express from 'express';
 import { AppDataSource } from "../data-source"
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { Exercise } from '../entity/exercise';
+import { ExerciseDTO } from '@pwrprogram/shared';
+import { toExerciseDTO } from '../mappers/exercise.mapper';
 import { Set } from '../entity/set';
+import { SetDTO } from '@pwrprogram/shared';
+import { toSetDTO } from '../mappers/set.mapper';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -33,7 +37,9 @@ router.get('/:id',
             res.status(404).send(null);
             return;
         }
-        res.status(200).json(exercise);
+        // Convert to DTO
+        const dto = toExerciseDTO(exercise);
+        res.status(200).json(dto);
     });
 
 router.patch('/:id',
@@ -52,7 +58,9 @@ router.patch('/:id',
         exercise.completed = req.body.completed || exercise.completed;
 
         await exerciseRepo.save(exercise);
-        res.status(200).json(exercise);
+        // Convert to DTO
+        const dto = toExerciseDTO(exercise);
+        res.status(200).json(dto);
     });
 
 router.get('/:exerciseId/overview',
@@ -102,7 +110,8 @@ router.post('/:exerciseId/sets',
         set.notes = req.body.notes || ""; // Default to empty string if not provided
 
         await setRepo.save(set);
-        res.status(201).json(set);
+        const dto = toSetDTO(set);
+        res.status(201).json(dto);
     });
 
 router.get('/:exerciseId/sets',
@@ -110,5 +119,5 @@ router.get('/:exerciseId/sets',
         const setList = await setRepo.find({
             where: { exerciseId: req.params.exerciseId }
         });
-        res.status(200).json(setList);
+        res.status(200).json(setList.map(toSetDTO));
     });

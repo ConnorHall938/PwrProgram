@@ -2,7 +2,11 @@ import * as Express from 'express';
 import { AppDataSource } from "../data-source"
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { Session } from '../entity/session';
+import { SessionDTO } from '@pwrprogram/shared';
+import { toSessionDTO } from '../mappers/session.mapper';
 import { Exercise } from '../entity/exercise';
+import { ExerciseDTO } from '@pwrprogram/shared';
+import { toExerciseDTO } from '../mappers/exercise.mapper';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -33,7 +37,9 @@ router.get('/:id',
             res.status(404).send(null);
             return;
         }
-        res.status(200).json(session);
+        // Convert to DTO
+        const dto = toSessionDTO(session);
+        res.status(200).json(dto);
     });
 
 router.patch('/:id',
@@ -52,7 +58,9 @@ router.patch('/:id',
         session.completed = req.body.completed || session.completed;
 
         await sessionRepo.save(session);
-        res.status(200).json(session);
+        // Convert to DTO
+        const dto = toSessionDTO(session);
+        res.status(200).json(dto);
     });
 
 router.get('/:sessionId/overview',
@@ -99,8 +107,7 @@ router.get('/:sessionId/exercises',
         const exerciseList = await exerciseRepo.find({
             where: { sessionId: req.params.sessionId }
         });
-
-        res.status(200).json(exerciseList);
+        res.status(200).json(exerciseList.map(toExerciseDTO));
     });
 
 router.post('/:sessionId/exercises',
@@ -112,5 +119,6 @@ router.post('/:sessionId/exercises',
         exercise.completed = req.body.completed; // Defaults to false if not provided
 
         await exerciseRepo.save(exercise);
-        res.status(201).json(exercise);
+        const dto = toExerciseDTO(exercise);
+        res.status(201).json(dto);
     });

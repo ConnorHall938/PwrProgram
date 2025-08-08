@@ -4,6 +4,8 @@ import { Program } from "../entity/program"
 import { get_user_from_request } from '../session-store'
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { Cycle } from '../entity/cycle';
+import { CycleDTO } from '@pwrprogram/shared';
+import { toCycleDTO } from '../mappers/cycle.mapper';
 import { plainToInstance } from 'class-transformer';
 import { ProgramDTO } from '@pwrprogram/shared';
 import { toProgramDTO } from '../mappers/program.mapper';
@@ -92,13 +94,15 @@ router.post('/:programId/cycles', async (req, res) => {
     cycle.completed = req.body.completed; // Defaults to false if not provided
 
     await cycleRepo.save(cycle);
-    res.status(201).json(cycle);
+    // Convert to DTO
+    const dto = toCycleDTO(cycle);
+    res.status(201).json(dto);
 });
 
 router.get('/:programId/cycles', async (req, res) => {
     const cycleList = await cycleRepo.find({
         where: { programId: req.params.programId }
     });
-
-    res.status(200).json(cycleList);
+    // Convert to DTOs
+    res.status(200).json(cycleList.map(toCycleDTO));
 });

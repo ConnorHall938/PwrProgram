@@ -2,7 +2,11 @@ import * as Express from 'express';
 import { AppDataSource } from "../data-source"
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { Block } from '../entity/block';
+import { BlockDTO } from '@pwrprogram/shared';
+import { toBlockDTO } from '../mappers/block.mapper';
 import { Session } from '../entity/session';
+import { SessionDTO } from '@pwrprogram/shared';
+import { toSessionDTO } from '../mappers/session.mapper';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -33,7 +37,9 @@ router.get('/:id',
             res.status(404).send(null);
             return;
         }
-        res.status(200).json(block);
+        // Convert to DTO
+        const dto = toBlockDTO(block);
+        res.status(200).json(dto);
     });
 
 router.patch('/:id',
@@ -54,7 +60,9 @@ router.patch('/:id',
         block.sessions_per_week = req.body.sessions_per_week || block.sessions_per_week;
 
         await blockRepo.save(block);
-        res.status(200).json(block);
+        // Convert to DTO
+        const dto = toBlockDTO(block);
+        res.status(200).json(dto);
     });
 
 router.get('/:blockId/overview',
@@ -104,14 +112,12 @@ router.get('/:blockId/overview',
 
 const sessionRepo = AppDataSource.getRepository(Session);
 
-
 router.get('/:blockId/sessions',
     async (req, res) => {
         const sessionList = await sessionRepo.find({
             where: { blockId: req.params.blockId }
         });
-
-        res.status(200).json(sessionList);
+        res.status(200).json(sessionList.map(toSessionDTO));
     });
 
 router.post('/:blockId/sessions',
@@ -122,7 +128,7 @@ router.post('/:blockId/sessions',
         session.blockId = req.params.blockId;
         session.completed = req.body.completed; // Defaults to false if not provided
 
-
         await sessionRepo.save(session);
-        res.status(201).json(session);
+        const dto = toSessionDTO(session);
+        res.status(201).json(dto);
     });

@@ -2,6 +2,8 @@ import * as Express from 'express';
 import { AppDataSource } from "../data-source"
 import { UnauthorizedException } from '../errors/unauthorizederror'
 import { Set } from '../entity/set';
+import { SetDTO } from '@pwrprogram/shared';
+import { toSetDTO } from '../mappers/set.mapper';
 
 const router = Express.Router({ mergeParams: true });
 
@@ -32,7 +34,9 @@ router.get('/:id',
             res.status(404).send(null);
             return;
         }
-        res.status(200).json(set);
+        // Convert to DTO
+        const dto = toSetDTO(set);
+        res.status(200).json(dto);
     });
 
 router.patch('/:id',
@@ -59,5 +63,7 @@ router.patch('/:id',
         set.notes = req.body.notes || set.notes;
 
         await setRepo.save(set);
-        res.status(200).json(set);
+        // Convert to DTO
+        const dto = toSetDTO(set);
+        res.status(200).json(dto);
     });
