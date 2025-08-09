@@ -1,5 +1,5 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
-import { Exercise } from "./exercise"
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Exercise } from "./exercise";
 
 @Entity()
 export class Set {
@@ -14,27 +14,27 @@ export class Set {
     exercise: Exercise
 
     @Column({ nullable: true })
-    target_reps?: number
+    targetReps?: number
 
     @Column({ nullable: true })
-    target_weight?: number
+    targetWeight?: number
 
     @Column({ nullable: true })
-    target_percentage?: number
+    targetPercentage?: number
 
     @Column({ nullable: true })
-    target_rpe?: number
+    targetRpe?: number
 
     @Column({ nullable: true })
-    actual_reps?: number
+    actualReps?: number
 
     @Column({ nullable: true })
-    actual_weight?: number
+    actualWeight?: number
 
     @Column({ nullable: true })
-    actual_rpe?: number
+    actualRpe?: number
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: false })
     completed?: boolean
 
     @Column({ nullable: true })

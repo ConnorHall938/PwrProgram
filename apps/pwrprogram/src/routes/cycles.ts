@@ -1,12 +1,13 @@
 
 import * as Express from 'express';
 import { Cycle } from "../entity/cycle";
-import { CycleDTO } from '@pwrprogram/shared';
+import { CycleDTO, CreateCycleDTO, UpdateCycleDTO } from '@pwrprogram/shared';
 import { toCycleDTO } from '../mappers/cycle.mapper';
 import { UnauthorizedException } from '../errors/unauthorizederror';
 import { Block } from '../entity/block';
 import { BlockDTO } from '@pwrprogram/shared';
 import { toBlockDTO } from '../mappers/block.mapper';
+import { validateRequest } from '../middleware/validation.middleware';
 
 export function cyclesRouter(dataSource): Express.Router {
     const router = Express.Router({ mergeParams: true });
@@ -39,7 +40,7 @@ export function cyclesRouter(dataSource): Express.Router {
         res.status(200).json(dto);
     });
 
-    router.patch('/:id', async (req, res) => {
+    router.patch('/:id', validateRequest(UpdateCycleDTO), async (req, res) => {
         const cycle = await cycleRepo.findOne({
             where: { id: req.params.id }
         });
@@ -48,11 +49,12 @@ export function cyclesRouter(dataSource): Express.Router {
             return;
         }
 
-        // Update fields
-        cycle.name = req.body.name || cycle.name;
-        cycle.description = req.body.description || cycle.description;
-        cycle.completed = req.body.completed || cycle.completed;
-        cycle.goals = Array.isArray(req.body.goals) ? req.body.goals : cycle.goals;
+        // Update fields (nullish coalescing so falsy values like '' not auto-retained unless intended)
+        const b = req.body;
+        cycle.name = b.name ?? cycle.name;
+        cycle.description = b.description ?? cycle.description;
+        cycle.completed = b.completed ?? cycle.completed;
+        cycle.goals = Array.isArray(b.goals) ? b.goals : cycle.goals;
 
         await cycleRepo.save(cycle);
         // Convert to DTO
@@ -60,16 +62,16 @@ export function cyclesRouter(dataSource): Express.Router {
         res.status(200).json(dto);
     });
 
-    router.post('/:programId/cycles', async (req, res) => {
-        let cycle = new Cycle();
-        cycle.programId = req.params.programId;
-        cycle.name = req.body.name;
-        cycle.description = req.body.description;
-        cycle.goals = Array.isArray(req.body.goals) ? req.body.goals : null;
-        cycle.completed = req.body.completed; // Defaults to false if not provided
-
+    router.post('/:programId/cycles', validateRequest(CreateCycleDTO), async (req, res) => {
+        const body = req.body;
+        const cycle = cycleRepo.create({
+            programId: req.params.programId,
+            name: body.name,
+            description: body.description,
+            goals: Array.isArray(body.goals) ? body.goals : undefined,
+            completed: body.completed
+        });
         await cycleRepo.save(cycle);
-        // Convert to DTO
         const dto = toCycleDTO(cycle);
         res.status(201).json(dto);
     });

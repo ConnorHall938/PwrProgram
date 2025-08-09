@@ -23,7 +23,7 @@ export class Block {
     goals?: string[]
 
     @Column({ nullable: false, default: 4 })
-    sessions_per_week: number
+    sessionsPerWeek: number
 
     @ManyToOne(() => Cycle, (cycle) => cycle.blocks)
     @JoinColumn({ name: 'cycleId' })  // explicitly link FK column

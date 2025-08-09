@@ -2,6 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { ExerciseDTO } from '@pwrprogram/shared';
 import { Exercise } from '../entity/exercise';
 import { handleMapperError } from '../utils/mapper.utils';
+import { buildExerciseLinks } from '../utils/hateoas';
 
 export function toExerciseDTO(entity: Exercise): ExerciseDTO {
     if (!entity) {
@@ -9,14 +10,7 @@ export function toExerciseDTO(entity: Exercise): ExerciseDTO {
     }
 
     try {
-        return plainToInstance(ExerciseDTO, {
-            ...entity,
-            _links: {
-                self: `/api/sessions/${entity.sessionId}/exercises/${entity.id}`,
-                session: `/api/sessions/${entity.sessionId}`,
-                sets: `/api/exercises/${entity.id}/sets`,
-            }
-        }, {
+        return plainToInstance(ExerciseDTO, { ...entity, _links: buildExerciseLinks(entity) }, {
             excludeExtraneousValues: true
         });
     } catch (error) {

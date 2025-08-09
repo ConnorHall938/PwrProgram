@@ -85,14 +85,15 @@ export function blocksRouter(dataSource): Express.Router {
         res.status(200).json(blockList.map(toBlockDTO));
     });
 
-    router.post('/:cycleId/blocks', async (req, res) => {
-        let block = new Block();
-        block.name = req.body.name;
-        block.description = req.body.description;
-        block.sessions_per_week = req.body.sessions_per_week; // Default to 4 if not provided
-        block.cycleId = req.params.cycleId;
-        block.goals = Array.isArray(req.body.goals) ? req.body.goals : [];
-
+    router.post('/:cycleId/blocks', validateRequest(CreateBlockDTO), async (req, res) => {
+        const body = req.body;
+        const block = blockRepo.create({
+            name: body.name,
+            description: body.description,
+            sessionsPerWeek: body.sessionsPerWeek,
+            cycleId: req.params.cycleId,
+            goals: Array.isArray(body.goals) ? body.goals : []
+        });
         await blockRepo.save(block);
         const dto = toBlockDTO(block);
         res.status(201).json(dto);

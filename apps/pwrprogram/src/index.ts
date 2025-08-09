@@ -3,12 +3,15 @@ import { AppDataSource } from "./data-source";
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import mountRoutes from './routes/index';
+import { errorHandler } from './middleware/error.middleware';
 
 export function createApp(dataSource = AppDataSource) {
     const app = express();
     app.use(express.json());
     app.use(cookieParser());
     mountRoutes(app, dataSource);
+    // Central error handler (after routes)
+    app.use(errorHandler);
     return app;
 }
 

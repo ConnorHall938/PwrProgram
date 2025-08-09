@@ -1,5 +1,6 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
+import { ensureDatabase } from './utils/ensure-database';
 import { User } from "./entity/User"
 import { Program } from "./entity/program"
 import { Cycle } from "./entity/cycle"
@@ -21,3 +22,7 @@ export const AppDataSource = new DataSource({
     migrations: [],
     subscribers: [],
 })
+
+// Ensure database exists (fire and forget; initialization should await this in app bootstrap if strict ordering needed)
+ensureDatabase({ host: 'localhost', port: 5432, user: 'postgres', password: 'password', database: 'pwrprogram' })
+    .catch(err => console.error('Failed ensuring main database:', err));

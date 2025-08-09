@@ -2,6 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { CycleDTO } from '@pwrprogram/shared';
 import { Cycle } from '../entity/cycle';
 import { handleMapperError } from '../utils/mapper.utils';
+import { buildCycleLinks } from '../utils/hateoas';
 
 export function toCycleDTO(entity: Cycle): CycleDTO {
     if (!entity) {
@@ -9,14 +10,7 @@ export function toCycleDTO(entity: Cycle): CycleDTO {
     }
 
     try {
-        return plainToInstance(CycleDTO, {
-            ...entity,
-            _links: {
-                self: `/api/programs/${entity.programId}/cycles/${entity.id}`,
-                program: `/api/programs/${entity.programId}`,
-                blocks: `/api/cycles/${entity.id}/blocks`,
-            }
-        }, {
+        return plainToInstance(CycleDTO, { ...entity, _links: buildCycleLinks(entity) }, {
             excludeExtraneousValues: true
         });
     } catch (error) {

@@ -88,13 +88,14 @@ export function sessionsRouter(dataSource): Express.Router {
         res.status(200).json(sessionList.map(toSessionDTO));
     });
 
-    router.post('/:blockId/sessions', async (req, res) => {
-        let session = new Session();
-        session.name = req.body.name;
-        session.description = req.body.description;
-        session.blockId = req.params.blockId;
-        session.completed = req.body.completed; // Defaults to false if not provided
-
+    router.post('/:blockId/sessions', validateRequest(CreateSessionDTO), async (req, res) => {
+        const body = req.body;
+        const session = sessionRepo.create({
+            name: body.name,
+            description: body.description,
+            blockId: req.params.blockId,
+            completed: body.completed
+        });
         await sessionRepo.save(session);
         const dto = toSessionDTO(session);
         res.status(201).json(dto);

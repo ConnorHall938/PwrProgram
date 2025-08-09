@@ -6,6 +6,7 @@ export class SessionDTO {
     @Expose() blockId: string;
     @Expose() name: string;
     @Expose() description?: string;
+    @Expose() completed?: boolean;
 
     @Expose()
     _links?: {

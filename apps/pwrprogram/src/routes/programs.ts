@@ -52,27 +52,22 @@ export function programsRouter(dataSource): Express.Router {
     });
 
     router.post('/', validateRequest(CreateProgramDTO), async (req, res) => {
-        let program = new Program();
-        program.name = req.body.name;
-        program.description = req.body.description;
-        program.userId = req.user_id;
-        program.coachId = req.body.coachId;
-
-        progRepo.save(program).then(
-            function () {
-                res.status(201).json(program);
+        const program = progRepo.create({
+            name: req.body.name,
+            description: req.body.description,
+            userId: req.user_id,
+            coachId: req.body.coachId
+        });
+        try {
+            await progRepo.save(program);
+            res.status(201).json(toProgramDTO(program));
+        } catch (error: any) {
+            if (error.code === '23505') {
+                return res.status(400).json({ message: "Duplicate email entered" });
             }
-        ).catch(
-            error => {
-                if (error.code === '23505') {
-                    res.status(400).json({ message: "Duplicate email entered" })
-                }
-                else {
-                    console.log(error);
-                    res.status(500).json({ message: "Internal server error" });
-                }
-            }
-        )
+            console.error(error);
+            res.status(500).json({ message: "Internal server error" });
+        }
     });
 
     return router;

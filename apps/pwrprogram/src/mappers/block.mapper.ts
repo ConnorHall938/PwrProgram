@@ -2,6 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { BlockDTO } from '@pwrprogram/shared';
 import { Block } from '../entity/block';
 import { handleMapperError } from '../utils/mapper.utils';
+import { buildBlockLinks } from '../utils/hateoas';
 
 export function toBlockDTO(entity: Block): BlockDTO {
     if (!entity) {
@@ -9,14 +10,7 @@ export function toBlockDTO(entity: Block): BlockDTO {
     }
 
     try {
-        return plainToInstance(BlockDTO, {
-            ...entity,
-            _links: {
-                self: `/api/cycles/${entity.cycleId}/blocks/${entity.id}`,
-                cycle: `/api/cycles/${entity.cycleId}`,
-                sessions: `/api/blocks/${entity.id}/sessions`,
-            }
-        }, {
+        return plainToInstance(BlockDTO, { ...entity, _links: buildBlockLinks(entity) }, {
             excludeExtraneousValues: true
         });
     } catch (error) {

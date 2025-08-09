@@ -1,56 +1,58 @@
-// server/src/utils/hateoas.ts
-import { ProgramDTO, CycleDTO, BlockDTO, SessionDTO, ExerciseDTO } from '@pwrprogram/shared';
+// Central HATEOAS link builders. These operate on minimal shape objects to avoid tight coupling.
 
-export function withProgramLinks(dto: ProgramDTO): ProgramDTO {
+interface HasId { id: string }
+
+export function buildProgramLinks(p: { id: string; coachId?: string; userId: string }) {
     return {
-        ...dto,
-        _links: {
-            self: `/api/programs/${dto.id}`,
-            cycles: `/api/programs/${dto.id}/cycles`,
-            coach: dto.coachId ? `/api/users/${dto.coachId}` : undefined,
-            user: `/api/users/${dto.userId}`
-        }
-    };
+        self: `/api/programs/${p.id}`,
+        cycles: `/api/programs/${p.id}/cycles`,
+        coach: p.coachId ? `/api/users/${p.coachId}` : undefined,
+        user: `/api/users/${p.userId}`
+    } as const;
 }
 
-export function withCycleLinks(dto: CycleDTO): CycleDTO {
+export function buildCycleLinks(c: { id: string; programId: string }) {
     return {
-        ...dto,
-        _links: {
-            self: `/api/cycles/${dto.id}`,
-            program: `/api/programs/${dto.programId}`,
-            blocks: `/api/cycles/${dto.id}/blocks`
-        }
-    };
+        self: `/api/programs/${c.programId}/cycles/${c.id}`,
+        program: `/api/programs/${c.programId}`,
+        blocks: `/api/cycles/${c.id}/blocks`
+    } as const;
 }
 
-export function withBlockLinks(dto: BlockDTO): BlockDTO {
+export function buildBlockLinks(b: { id: string; cycleId: string }) {
     return {
-        ...dto,
-        _links: {
-            self: `/api/blocks/${dto.id}`,
-            cycle: `/api/cycles/${dto.cycleId}`,
-            sessions: `/api/blocks/${dto.id}/sessions`
-        }
-    };
+        self: `/api/cycles/${b.cycleId}/blocks/${b.id}`,
+        cycle: `/api/cycles/${b.cycleId}`,
+        sessions: `/api/blocks/${b.id}/sessions`
+    } as const;
 }
-export function withSessionLinks(dto: SessionDTO): SessionDTO {
+
+export function buildSessionLinks(s: { id: string; blockId: string }) {
     return {
-        ...dto,
-        _links: {
-            self: `/api/sessions/${dto.id}`,
-            block: `/api/blocks/${dto.blockId}`,
-            exercises: `/api/sessions/${dto.id}/exercises`
-        }
-    };
+        self: `/api/blocks/${s.blockId}/sessions/${s.id}`,
+        block: `/api/blocks/${s.blockId}`,
+        exercises: `/api/sessions/${s.id}/exercises`
+    } as const;
 }
-export function withExerciseLinks(dto: ExerciseDTO): ExerciseDTO {
+
+export function buildExerciseLinks(e: { id: string; sessionId: string }) {
     return {
-        ...dto,
-        _links: {
-            self: `/api/exercises/${dto.id}`,
-            session: `/api/sessions/${dto.sessionId}`,
-            sets: `/api/exercises/${dto.id}/sets`
-        }
-    };
+        self: `/api/sessions/${e.sessionId}/exercises/${e.id}`,
+        session: `/api/sessions/${e.sessionId}`,
+        sets: `/api/exercises/${e.id}/sets`
+    } as const;
+}
+
+export function buildSetLinks(s: { id: string; exerciseId: string }) {
+    return {
+        self: `/api/exercises/${s.exerciseId}/sets/${s.id}`,
+        exercise: `/api/exercises/${s.exerciseId}`
+    } as const;
+}
+
+export function buildUserLinks(u: { id: string }) {
+    return {
+        self: `/api/users/${u.id}`,
+        programs: `/api/users/${u.id}/programs`
+    } as const;
 }

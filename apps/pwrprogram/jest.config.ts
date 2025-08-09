@@ -12,5 +12,6 @@ export default {
     moduleFileExtensions: ['ts', 'js'],
     setupFilesAfterEnv: ['<rootDir>/src/testing/setup.ts'],
     testTimeout: 10000, // Some DB operations might take time
-    maxWorkers: 4
+    // Run tests sequentially to avoid race conditions on single Postgres test DB initialization
+    maxWorkers: 1
 };

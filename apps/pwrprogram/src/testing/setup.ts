@@ -1,4 +1,5 @@
 import { testDataSource } from './utils/test-data-source';
+import { ensureDatabases } from '../utils/ensure-database';
 import { createApp } from '../index';
 import { Set } from '../entity/set';
 import { Exercise } from '../entity/exercise';
@@ -14,6 +15,12 @@ export const app = createApp(testDataSource);
 beforeAll(async () => {
     // Only initialize if not already initialized
     if (!testDataSource.isInitialized) {
+        await ensureDatabases(['pwrprogram_test'], {
+            host: 'localhost',
+            port: 5432,
+            user: 'postgres',
+            password: 'password'
+        });
         await testDataSource.initialize();
     }
     // Clear the database before running tests

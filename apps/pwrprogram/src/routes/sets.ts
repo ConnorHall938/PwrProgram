@@ -2,14 +2,15 @@
 import * as Express from 'express';
 import { UnauthorizedException } from '../errors/unauthorizederror';
 import { Set } from '../entity/set';
-import { SetDTO, CreateSetDTO } from '@pwrprogram/shared';
+import { Exercise } from '../entity/exercise';
+import { SetDTO, CreateSetDTO, UpdateSetDTO } from '@pwrprogram/shared';
 import { toSetDTO } from '../mappers/set.mapper';
 import { validateRequest } from '../middleware/validation.middleware';
 
 export function setsRouter(dataSource): Express.Router {
     const router = Express.Router({ mergeParams: true });
     const setRepo = dataSource.getRepository(Set);
-    const exerciseRepo = dataSource.getRepository('Exercise');
+    const exerciseRepo = dataSource.getRepository(Exercise);
 
     // Get Exercise ID from request parameters
     router.use(function (req, res, next) {
@@ -38,8 +39,19 @@ export function setsRouter(dataSource): Express.Router {
                 });
             }
 
+            const b = req.body;
             let set = new Set();
-            setRepo.merge(set, req.body);
+            set.targetReps = b.targetReps;
+            set.targetWeight = b.targetWeight;
+            set.targetRpe = b.targetRpe;
+            set.targetPercentage = b.targetPercentage;
+            set.actualReps = b.actualReps;
+            set.actualWeight = b.actualWeight;
+            set.actualRpe = b.actualRpe;
+            set.completed = b.completed ?? false;
+            set.tempo = b.tempo;
+            set.rest = b.rest;
+            set.notes = b.notes;
             set.exerciseId = exercise.id;
 
             await setRepo.save(set);
@@ -83,7 +95,7 @@ export function setsRouter(dataSource): Express.Router {
         res.status(200).json(dto);
     });
 
-    router.patch('/:id', async (req, res) => {
+    router.patch('/:id', validateRequest(UpdateSetDTO), async (req, res) => {
         const set = await setRepo.findOne({
             where: { id: req.params.id, exerciseId: req.exercise_id }
         });
@@ -92,18 +104,19 @@ export function setsRouter(dataSource): Express.Router {
             return;
         }
 
-        // Update fields
-        set.target_reps = req.body.target_reps || set.target_reps;
-        set.target_weight = req.body.target_weight || set.target_weight;
-        set.target_percentage = req.body.target_percentage || set.target_percentage;
-        set.target_rpe = req.body.target_rpe || set.target_rpe;
-        set.actual_reps = req.body.actual_reps || set.actual_reps;
-        set.actual_weight = req.body.actual_weight || set.actual_weight;
-        set.actual_rpe = req.body.actual_rpe || set.actual_rpe;
-        set.completed = req.body.completed || set.completed;
-        set.tempo = req.body.tempo || set.tempo;
-        set.rest = req.body.rest || set.rest;
-        set.notes = req.body.notes || set.notes;
+        // Update fields using nullish coalescing so 0/false are preserved
+        const b = req.body;
+        set.targetReps = b.targetReps ?? set.targetReps;
+        set.targetWeight = b.targetWeight ?? set.targetWeight;
+        set.targetPercentage = b.targetPercentage ?? set.targetPercentage;
+        set.targetRpe = b.targetRpe ?? set.targetRpe;
+        set.actualReps = b.actualReps ?? set.actualReps;
+        set.actualWeight = b.actualWeight ?? set.actualWeight;
+        set.actualRpe = b.actualRpe ?? set.actualRpe;
+        set.completed = b.completed ?? set.completed;
+        set.tempo = b.tempo ?? set.tempo;
+        set.rest = b.rest ?? set.rest;
+        set.notes = b.notes ?? set.notes;
 
         await setRepo.save(set);
         // Convert to DTO

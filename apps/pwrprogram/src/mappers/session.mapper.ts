@@ -2,6 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { SessionDTO } from '@pwrprogram/shared';
 import { Session } from '../entity/session';
 import { handleMapperError } from '../utils/mapper.utils';
+import { buildSessionLinks } from '../utils/hateoas';
 
 export function toSessionDTO(entity: Session): SessionDTO {
     if (!entity) {
@@ -9,14 +10,7 @@ export function toSessionDTO(entity: Session): SessionDTO {
     }
 
     try {
-        return plainToInstance(SessionDTO, {
-            ...entity,
-            _links: {
-                self: `/api/blocks/${entity.blockId}/sessions/${entity.id}`,
-                block: `/api/blocks/${entity.blockId}`,
-                exercises: `/api/sessions/${entity.id}/exercises`,
-            }
-        }, {
+        return plainToInstance(SessionDTO, { ...entity, _links: buildSessionLinks(entity) }, {
             excludeExtraneousValues: true
         });
     } catch (error) {

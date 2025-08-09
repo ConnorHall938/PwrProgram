@@ -37,7 +37,7 @@ export class CreateBlockDTO {
     @IsNumber()
     @Min(1)
     @IsOptional()
-    sessions_per_week?: number;
+    sessionsPerWeek?: number;
 }
 
 export class UpdateBlockDTO {
@@ -61,5 +61,5 @@ export class UpdateBlockDTO {
     @IsNumber()
     @Min(1)
     @IsOptional()
-    sessions_per_week?: number;
+    sessionsPerWeek?: number;
 }

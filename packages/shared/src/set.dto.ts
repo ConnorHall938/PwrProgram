@@ -6,13 +6,13 @@ export class SetDTO {
     @Expose() exerciseId: string;
     @Expose() targetReps?: number;
     @Expose() targetWeight?: number;
-    @Expose() targetRPE?: number;
+    @Expose() targetRpe?: number;
     @Expose() targetPercentage?: number;
     @Expose() completed: boolean;
     @Expose() actualReps?: number;
     @Expose() actualWeight?: number;
-    @Expose() actualRPE?: number;
-    @Expose() actualPercentage?: number;
+    @Expose() actualRpe?: number;
+    @Expose() actualPercentage?: number; // reserved
 
     @Expose()
     _links?: {
@@ -25,40 +25,40 @@ export class CreateSetDTO {
     @IsNumber()
     @Min(0)
     @IsOptional()
-    target_reps?: number;
+    targetReps?: number;
 
     @IsNumber()
     @Min(0)
     @IsOptional()
-    target_weight?: number;
+    targetWeight?: number;
 
     @IsNumber()
     @Min(0)
     @Max(100)
     @IsOptional()
-    target_percentage?: number;
+    targetPercentage?: number;
 
     @IsNumber()
     @Min(1)
     @Max(10)
     @IsOptional()
-    target_rpe?: number;
+    targetRpe?: number;
 
     @IsNumber()
     @Min(0)
     @IsOptional()
-    actual_reps?: number;
+    actualReps?: number;
 
     @IsNumber()
     @Min(0)
     @IsOptional()
-    actual_weight?: number;
+    actualWeight?: number;
 
     @IsNumber()
     @Min(1)
     @Max(10)
     @IsOptional()
-    actual_rpe?: number;
+    actualRpe?: number;
 
     @IsBoolean()
     @IsOptional()
@@ -82,40 +82,40 @@ export class UpdateSetDTO {
     @IsNumber()
     @Min(0)
     @IsOptional()
-    target_reps?: number;
+    targetReps?: number;
 
     @IsNumber()
     @Min(0)
     @IsOptional()
-    target_weight?: number;
+    targetWeight?: number;
 
     @IsNumber()
     @Min(0)
     @Max(100)
     @IsOptional()
-    target_percentage?: number;
+    targetPercentage?: number;
 
     @IsNumber()
     @Min(1)
     @Max(10)
     @IsOptional()
-    target_rpe?: number;
+    targetRpe?: number;
 
     @IsNumber()
     @Min(0)
     @IsOptional()
-    actual_reps?: number;
+    actualReps?: number;
 
     @IsNumber()
     @Min(0)
     @IsOptional()
-    actual_weight?: number;
+    actualWeight?: number;
 
     @IsNumber()
     @Min(1)
     @Max(10)
     @IsOptional()
-    actual_rpe?: number;
+    actualRpe?: number;
 
     @IsBoolean()
     @IsOptional()

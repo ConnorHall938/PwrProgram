@@ -24,8 +24,21 @@ export function usersRouter(dataSource): Express.Router {
   });
 
   router.post('/', validateRequest(CreateUserDTO), async (req, res) => {
-    // Use TypeORM repository.create to hydrate the entity from validated DTO
-    const user = userRepo.create(req.body);
+    // Normalize / sanitize input (do not trim password on purpose)
+    const email = typeof req.body.email === 'string' ? req.body.email.trim() : req.body.email;
+    const firstName = typeof req.body.firstName === 'string' ? req.body.firstName.trim() : req.body.firstName;
+    let lastName = req.body.lastName;
+    if (typeof lastName === 'string') {
+      lastName = lastName.trim();
+      if (lastName.length === 0) lastName = null;
+    }
+
+    const user = userRepo.create({
+      email,
+      firstName,
+      lastName,
+      password: req.body.password
+    });
     try {
       await userRepo.save(user);
       res.status(201).json(toUserDTO(user));
