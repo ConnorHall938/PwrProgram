@@ -1,15 +1,12 @@
 
+import { CreateProgramDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
-import { Program } from "../entity/program";
-import { get_user_from_request } from '../session-store';
+
+import { Program } from '../entity/program';
 import { UnauthorizedException } from '../errors/unauthorizederror';
-import { Cycle } from '../entity/cycle';
-import { CycleDTO } from '@pwrprogram/shared';
-import { toCycleDTO } from '../mappers/cycle.mapper';
-import { plainToInstance } from 'class-transformer';
-import { ProgramDTO, CreateProgramDTO, UpdateProgramDTO } from '@pwrprogram/shared';
 import { toProgramDTO } from '../mappers/program.mapper';
 import { validateRequest } from '../middleware/validation.middleware';
+import { get_user_from_request } from '../session-store';
 
 export function programsRouter(dataSource): Express.Router {
     const router = Express.Router();
@@ -61,8 +58,9 @@ export function programsRouter(dataSource): Express.Router {
         try {
             await progRepo.save(program);
             res.status(201).json(toProgramDTO(program));
-        } catch (error: any) {
-            if (error.code === '23505') {
+        } catch (error) {
+            const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
+            if (code === '23505') {
                 return res.status(400).json({ message: "Duplicate email entered" });
             }
             console.error(error);

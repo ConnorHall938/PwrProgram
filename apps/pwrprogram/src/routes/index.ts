@@ -1,11 +1,11 @@
 import base from './base';
-import { usersRouter } from './users';
-import { programsRouter } from './programs';
-import { setsRouter } from './sets';
-import { exercisesRouter } from './exercises';
-import { cyclesRouter } from './cycles';
 import { blocksRouter } from './blocks';
+import { cyclesRouter } from './cycles';
+import { exercisesRouter } from './exercises';
+import { programsRouter } from './programs';
 import { sessionsRouter } from './sessions';
+import { setsRouter } from './sets';
+import { usersRouter } from './users';
 
 
 const mountRoutes = (app, dataSource) => {

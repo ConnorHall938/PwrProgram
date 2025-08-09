@@ -1,7 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, PrimaryColumn, ManyToOne, OneToMany, JoinColumn } from "typeorm"
-import { User } from "./User"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from "typeorm"
+
 import { Cycle } from "./cycle"
-import { ProgramDTO } from '@pwrprogram/shared'
+import { User } from "./User"
 
 @Entity()
 export class Program {

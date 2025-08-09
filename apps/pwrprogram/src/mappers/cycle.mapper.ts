@@ -1,8 +1,9 @@
-import { plainToInstance } from 'class-transformer';
 import { CycleDTO } from '@pwrprogram/shared';
+import { plainToInstance } from 'class-transformer';
+
 import { Cycle } from '../entity/cycle';
-import { handleMapperError } from '../utils/mapper.utils';
 import { buildCycleLinks } from '../utils/hateoas';
+import { handleMapperError } from '../utils/mapper.utils';
 
 export function toCycleDTO(entity: Cycle): CycleDTO {
     if (!entity) {

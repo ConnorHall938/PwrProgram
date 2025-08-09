@@ -1,12 +1,10 @@
 
+import { CreateCycleDTO, UpdateCycleDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
-import { Cycle } from "../entity/cycle";
-import { CycleDTO, CreateCycleDTO, UpdateCycleDTO } from '@pwrprogram/shared';
-import { toCycleDTO } from '../mappers/cycle.mapper';
+
+import { Cycle } from '../entity/cycle';
 import { UnauthorizedException } from '../errors/unauthorizederror';
-import { Block } from '../entity/block';
-import { BlockDTO } from '@pwrprogram/shared';
-import { toBlockDTO } from '../mappers/block.mapper';
+import { toCycleDTO } from '../mappers/cycle.mapper';
 import { validateRequest } from '../middleware/validation.middleware';
 
 export function cyclesRouter(dataSource): Express.Router {

@@ -1,8 +1,9 @@
-import { plainToInstance } from 'class-transformer';
 import { SetDTO } from '@pwrprogram/shared';
+import { plainToInstance } from 'class-transformer';
+
 import { Set } from '../entity/set';
-import { handleMapperError } from '../utils/mapper.utils';
 import { buildSetLinks } from '../utils/hateoas';
+import { handleMapperError } from '../utils/mapper.utils';
 
 export function toSetDTO(entity: Set): SetDTO {
     if (!entity) throw new Error('Cannot map null or undefined Set entity');

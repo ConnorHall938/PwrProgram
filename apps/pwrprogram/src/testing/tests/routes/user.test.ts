@@ -1,9 +1,10 @@
-import { testDataSource } from '../../utils/test-data-source';
-import { User } from '../../../entity/User';
-import { Repository } from 'typeorm';
-import * as supertest from 'supertest';
 import { CreateUserDTO } from '@pwrprogram/shared';
+import * as supertest from 'supertest';
+import { Repository } from 'typeorm';
+
+import { User } from '../../../entity/User';
 import { app } from '../../setup';
+import { testDataSource } from '../../utils/test-data-source';
 const request = supertest.default(app);
 
 describe('User API', () => {
@@ -74,7 +75,7 @@ describe('User API', () => {
         const after = await request.get('/api/users').expect(200);
         expect(Array.isArray(after.body)).toBe(true);
         expect(after.body.length).toBeGreaterThanOrEqual(beforeCount + 2);
-        const emails = after.body.map((u: any) => u.email);
+        const emails = after.body.map((u: { email: string }) => u.email);
         expect(emails).toEqual(expect.arrayContaining([u1.email, u2.email]));
         // Ensure DTO shape
         for (const u of after.body) {
@@ -147,7 +148,7 @@ describe('User API', () => {
             email: uniqueEmail('nolast'),
             password: 'strongpass',
             firstName: 'NoLast'
-        } as any; // lastName intentionally omitted
+        }; // lastName intentionally omitted
 
         const res = await request.post('/api/users').send(dto).expect(201);
         expect(res.body.lastName).toBeUndefined(); // DTO should omit
@@ -156,12 +157,12 @@ describe('User API', () => {
     });
 
     it('should trim leading and trailing spaces from name & email fields', async () => {
-        const raw = {
+        const raw: CreateUserDTO & { lastName: string } = {
             email: `  spaced-${Date.now()}@example.com  `,
             password: 'passwordWith Spaces', // password should NOT be trimmed
             firstName: '  Alice  ',
             lastName: '  Wonderland  '
-        } as any;
+        };
         const res = await request.post('/api/users').send(raw).expect(201);
         expect(res.body.email.startsWith('spaced-')).toBe(true);
         expect(res.body.email.endsWith('@example.com')).toBe(true);
@@ -182,7 +183,7 @@ describe('User API', () => {
             password: 'emptypass',
             firstName: 'Empty',
             lastName: '' // explicit empty
-        } as any;
+        };
         const res = await request.post('/api/users').send(dto).expect(201);
         expect(res.body.lastName).toBeUndefined(); // omitted after sanitization
         const entity = await userRepository.findOneBy({ id: res.body.id });
@@ -194,7 +195,7 @@ describe('User API', () => {
             email: uniqueEmail('shortpw'),
             password: '12345', // length 5
             firstName: 'Short'
-        } as any;
+        };
         const res = await request.post('/api/users').send(dto).expect(400);
         expect(res.body.message).toBe('Validation failed');
         expect(res.body.errors.password).toBeDefined();
@@ -206,7 +207,7 @@ describe('User API', () => {
             password: 'whitespacepass',
             firstName: 'White',
             lastName: '    '
-        } as any;
+        };
         const res = await request.post('/api/users').send(dto).expect(201);
         expect(res.body.lastName).toBeUndefined();
         const entity = await userRepository.findOneBy({ id: res.body.id });

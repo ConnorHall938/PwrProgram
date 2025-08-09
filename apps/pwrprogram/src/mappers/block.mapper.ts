@@ -1,8 +1,9 @@
-import { plainToInstance } from 'class-transformer';
 import { BlockDTO } from '@pwrprogram/shared';
+import { plainToInstance } from 'class-transformer';
+
 import { Block } from '../entity/block';
-import { handleMapperError } from '../utils/mapper.utils';
 import { buildBlockLinks } from '../utils/hateoas';
+import { handleMapperError } from '../utils/mapper.utils';
 
 export function toBlockDTO(entity: Block): BlockDTO {
     if (!entity) {

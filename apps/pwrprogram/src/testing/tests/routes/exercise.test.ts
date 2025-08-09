@@ -1,14 +1,7 @@
-import * as supertest from 'supertest';
-import { app } from '../../setup';
-import { testDataSource } from '../../utils/test-data-source';
-import { Repository } from 'typeorm';
-import { Program } from '../../../entity/program';
-import { User } from '../../../entity/User';
-import { Cycle } from '../../../entity/cycle';
-import { Block } from '../../../entity/block';
-import { Session } from '../../../entity/session';
-import { Exercise } from '../../../entity/exercise';
 import { CreateProgramDTO, CreateCycleDTO, CreateBlockDTO, CreateSessionDTO, CreateExerciseDTO, UpdateExerciseDTO } from '@pwrprogram/shared';
+import * as supertest from 'supertest';
+
+import { app } from '../../setup';
 
 const request = supertest.default(app);
 
@@ -28,7 +21,7 @@ describe('Exercise API', () => {
     });
 
     it('should create an exercise', async () => {
-        const payload: CreateExerciseDTO = { name: 'Bench Press', description: 'Barbell flat bench' } as any;
+        const payload: CreateExerciseDTO = { name: 'Bench Press', description: 'Barbell flat bench' };
         const res = await request.post(`/api/exercises/${sessionID}/exercises`).send(payload).expect(201);
         expect(res.body).toHaveProperty('id');
         expect(res.body.name).toBe('Bench Press');
@@ -56,7 +49,7 @@ describe('Exercise API', () => {
     it('should patch an exercise', async () => {
         const c = await request.post(`/api/exercises/${sessionID}/exercises`).send({ name: 'Patch Ex' }).expect(201);
         const id = c.body.id;
-        const patch: UpdateExerciseDTO = { name: 'Patched Ex', description: 'Updated', completed: true } as any;
+        const patch: UpdateExerciseDTO = { name: 'Patched Ex', description: 'Updated', completed: true };
         const res = await request.patch(`/api/exercises/${id}`).send(patch).expect(200);
         expect(res.body.name).toBe('Patched Ex');
         expect(res.body.description).toBe('Updated');

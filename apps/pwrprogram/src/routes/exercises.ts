@@ -1,13 +1,12 @@
 
+import { CreateExerciseDTO, UpdateExerciseDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
-import { UnauthorizedException } from '../errors/unauthorizederror';
+
 import { Exercise } from '../entity/exercise';
-import { ExerciseDTO, CreateExerciseDTO, UpdateExerciseDTO } from '@pwrprogram/shared';
-import { toExerciseDTO } from '../mappers/exercise.mapper';
 import { Set } from '../entity/set';
-import { SetDTO, CreateSetDTO, UpdateSetDTO } from '@pwrprogram/shared';
+import { UnauthorizedException } from '../errors/unauthorizederror';
+import { toExerciseDTO } from '../mappers/exercise.mapper';
 import { validateRequest } from '../middleware/validation.middleware';
-import { toSetDTO } from '../mappers/set.mapper';
 
 export function exercisesRouter(dataSource): Express.Router {
     const router = Express.Router({ mergeParams: true });

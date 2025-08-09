@@ -1,16 +1,16 @@
+import { CreateProgramDTO } from '@pwrprogram/shared';
 import * as supertest from 'supertest';
+import { Repository } from 'typeorm';
+
+// Removed unused Program import
+import { User } from '../../../entity/User';
 import { app } from '../../setup';
 import { testDataSource } from '../../utils/test-data-source';
-import { Repository } from 'typeorm';
-import { Program } from '../../../entity/program';
-import { User } from '../../../entity/User';
-import { CreateProgramDTO } from '@pwrprogram/shared';
-import { create_session } from '../../../session-store';
 
 const request = supertest.default(app);
 
 describe('Program API', () => {
-    let programRepo: Repository<Program>;
+    // Only userRepo is needed (programRepo removed as unused)
     let userRepo: Repository<User>;
     let userID: string; // primary test user id
     let userCookie: string; // cookie string for primary user (e.g., 'session_id=...')
@@ -25,7 +25,7 @@ describe('Program API', () => {
     }
 
     beforeAll(async () => {
-        programRepo = testDataSource.getRepository(Program);
+        // programRepo intentionally omitted (unused)
         userRepo = testDataSource.getRepository(User);
 
         // Create primary user through API
@@ -40,7 +40,7 @@ describe('Program API', () => {
     });
 
     it('should create a program for the current user and return it', async () => {
-        const payload: CreateProgramDTO = { name: 'Strength Base', description: 'Base phase' } as any;
+        const payload: CreateProgramDTO = { name: 'Strength Base', description: 'Base phase' };
         const res = await auth(request.post('/api/programs')).send(payload).expect(201);
 
         expect(res.body).toHaveProperty('id');
@@ -72,7 +72,7 @@ describe('Program API', () => {
         expect(Array.isArray(listRes.body)).toBe(true);
         // At least baseline + 2 new (could be more from previous tests in file)
         expect(listRes.body.length).toBeGreaterThanOrEqual(baseline + 2);
-        const returnedNames = listRes.body.map((p: any) => p.name);
+        const returnedNames = listRes.body.map((p: { name: string }) => p.name);
         for (const n of names) {
             expect(returnedNames).toContain(n);
         }

@@ -1,9 +1,9 @@
 export class MapperError extends Error {
     constructor(
         message: string,
-        public readonly entityType: string,
-        public readonly entityId?: string | number,
-        public readonly cause?: unknown
+        public readonly _entityType: string,
+        public readonly _entityId?: string | number,
+        public readonly _cause?: unknown
     ) {
         super(message);
         this.name = 'MapperError';

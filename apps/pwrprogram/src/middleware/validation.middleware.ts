@@ -1,8 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
-import { validate, ValidationError } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { validate, ValidationError } from 'class-validator';
+import { Request, Response, NextFunction } from 'express';
 
-export const validateRequest = (dtoClass: any) => {
+type ClassType<T extends object> = { new(): T };
+
+export const validateRequest = <T extends object>(dtoClass: ClassType<T>) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         const dtoInstance = plainToInstance(dtoClass, req.body);
         const errors = await validate(dtoInstance);

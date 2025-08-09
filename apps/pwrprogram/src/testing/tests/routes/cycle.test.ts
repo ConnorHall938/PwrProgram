@@ -1,18 +1,14 @@
-import * as supertest from 'supertest';
-import { app } from '../../setup';
-import { testDataSource } from '../../utils/test-data-source';
-import { Repository } from 'typeorm';
-import { Program } from '../../../entity/program';
-import { User } from '../../../entity/User';
-import { Cycle } from '../../../entity/cycle';
 import { CreateProgramDTO, CreateCycleDTO, UpdateCycleDTO } from '@pwrprogram/shared';
+import * as supertest from 'supertest';
+
+// Removed unused repository/entity imports
+import { app } from '../../setup';
+// testDataSource import removed (unused)
 
 const request = supertest.default(app);
 
 describe('Cycle API', () => {
-    let programRepo: Repository<Program>;
-    let userRepo: Repository<User>;
-    let cycleRepo: Repository<Cycle>;
+    // Removed unused repository variables
     let userID: string;
     let programID: string;
     let userCookie: string;
@@ -27,9 +23,7 @@ describe('Cycle API', () => {
     }
 
     beforeAll(async () => {
-        programRepo = testDataSource.getRepository(Program);
-        userRepo = testDataSource.getRepository(User);
-        cycleRepo = testDataSource.getRepository(Cycle);
+        // Repository retrieval removed (unused)
 
         // Create and login user
         const userRes = await request.post('/api/users').send({
@@ -46,7 +40,7 @@ describe('Cycle API', () => {
     });
 
     it('should create a cycle for a program and return DTO with links', async () => {
-        const payload: CreateCycleDTO = { name: 'Base Cycle', description: 'Intro phase', goals: ['Adapt'] } as any;
+        const payload: CreateCycleDTO = { name: 'Base Cycle', description: 'Intro phase', goals: ['Adapt'] };
         const res = await request.post(`/api/cycles/${programID}/cycles`).send(payload).expect(201);
 
         expect(res.body).toHaveProperty('id');
@@ -79,7 +73,7 @@ describe('Cycle API', () => {
         const createRes = await request.post(`/api/cycles/${programID}/cycles`).send({ name: 'PatchMe' }).expect(201);
         const cycleId = createRes.body.id;
 
-        const patchPayload: UpdateCycleDTO = { name: 'Patched', description: 'Updated desc', completed: true } as any;
+        const patchPayload: UpdateCycleDTO = { name: 'Patched', description: 'Updated desc', completed: true };
         const patchRes = await request.patch(`/api/cycles/${cycleId}`).send(patchPayload).expect(200);
         expect(patchRes.body.name).toBe('Patched');
         expect(patchRes.body.description).toBe('Updated desc');

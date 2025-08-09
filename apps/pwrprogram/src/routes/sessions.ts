@@ -1,18 +1,15 @@
 
+import { CreateSessionDTO, UpdateSessionDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
-import { UnauthorizedException } from '../errors/unauthorizederror';
+
 import { Session } from '../entity/session';
-import { SessionDTO, CreateSessionDTO, UpdateSessionDTO } from '@pwrprogram/shared';
+import { UnauthorizedException } from '../errors/unauthorizederror';
 import { toSessionDTO } from '../mappers/session.mapper';
-import { Exercise } from '../entity/exercise';
-import { ExerciseDTO, CreateExerciseDTO } from '@pwrprogram/shared';
 import { validateRequest } from '../middleware/validation.middleware';
-import { toExerciseDTO } from '../mappers/exercise.mapper';
 
 export function sessionsRouter(dataSource): Express.Router {
     const router = Express.Router({ mergeParams: true });
     const sessionRepo = dataSource.getRepository(Session);
-    const exerciseRepo = dataSource.getRepository(Exercise);
 
     // Get Block ID from request parameters
     router.use(function (req, res, next) {

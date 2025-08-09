@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
+import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
+
 import { Block } from "./block"
 import { Exercise } from "./exercise"
 

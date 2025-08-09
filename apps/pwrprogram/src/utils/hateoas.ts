@@ -1,7 +1,5 @@
 // Central HATEOAS link builders. These operate on minimal shape objects to avoid tight coupling.
 
-interface HasId { id: string }
-
 export function buildProgramLinks(p: { id: string; coachId?: string; userId: string }) {
     return {
         self: `/api/programs/${p.id}`,

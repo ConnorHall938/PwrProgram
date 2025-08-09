@@ -1,9 +1,10 @@
 
-import * as Express from 'express';
-import { User } from "../entity/User";
 import { CreateUserDTO } from '@pwrprogram/shared';
-import { validateRequest } from '../middleware/validation.middleware';
+import * as Express from 'express';
+
+import { User } from "../entity/User";
 import { toUserDTO } from '../mappers/user.mapper';
+import { validateRequest } from '../middleware/validation.middleware';
 
 export function usersRouter(dataSource): Express.Router {
   const router = Express.Router();
@@ -42,7 +43,7 @@ export function usersRouter(dataSource): Express.Router {
     try {
       await userRepo.save(user);
       res.status(201).json(toUserDTO(user));
-    } catch (error: any) {
+    } catch (error) {
       if (error && error.code === '23505') {
         return res.status(400).json({ message: 'Email already exists' });
       }

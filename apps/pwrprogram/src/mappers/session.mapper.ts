@@ -1,8 +1,9 @@
-import { plainToInstance } from 'class-transformer';
 import { SessionDTO } from '@pwrprogram/shared';
+import { plainToInstance } from 'class-transformer';
+
 import { Session } from '../entity/session';
-import { handleMapperError } from '../utils/mapper.utils';
 import { buildSessionLinks } from '../utils/hateoas';
+import { handleMapperError } from '../utils/mapper.utils';
 
 export function toSessionDTO(entity: Session): SessionDTO {
     if (!entity) {

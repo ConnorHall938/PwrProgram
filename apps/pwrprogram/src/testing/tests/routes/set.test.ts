@@ -1,6 +1,7 @@
-import * as supertest from 'supertest';
-import { app } from '../../setup';
 import { CreateProgramDTO, CreateCycleDTO, CreateBlockDTO, CreateSessionDTO, CreateExerciseDTO, CreateSetDTO, UpdateSetDTO } from '@pwrprogram/shared';
+import * as supertest from 'supertest';
+
+import { app } from '../../setup';
 
 const request = supertest.default(app);
 
@@ -21,7 +22,7 @@ describe('Set API', () => {
     });
 
     it('should create a set', async () => {
-        const payload: CreateSetDTO = { targetReps: 5, targetWeight: 100 } as any;
+        const payload: CreateSetDTO = { targetReps: 5, targetWeight: 100 };
         const res = await request.post(`/api/sets/${exerciseID}/sets`).send(payload).expect(201);
         expect(res.body).toHaveProperty('id');
         expect(res.body.exerciseId).toBe(exerciseID);
@@ -31,14 +32,14 @@ describe('Set API', () => {
     it('should list sets for an exercise', async () => {
         const before = await request.get(`/api/sets/${exerciseID}/sets`).expect(200);
         const baseline = before.body.length;
-        await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 3 } as any).expect(201);
-        await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 4 } as any).expect(201);
+        await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 3 }).expect(201);
+        await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 4 }).expect(201);
         const after = await request.get(`/api/sets/${exerciseID}/sets`).expect(200);
         expect(after.body.length).toBeGreaterThanOrEqual(baseline + 2);
     });
 
     it('should fetch a set by id', async () => {
-        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 8 } as any).expect(201);
+        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 8 }).expect(201);
         const id = c.body.id;
         const res = await request.get(`/api/sets/${id}`).expect(200);
         expect(res.body.id).toBe(id);
@@ -46,9 +47,9 @@ describe('Set API', () => {
     });
 
     it('should patch a set', async () => {
-        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 6 } as any).expect(201);
+        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 6 }).expect(201);
         const id = c.body.id;
-        const patch: UpdateSetDTO = { targetReps: 10, completed: true, notes: 'All reps easy' } as any;
+        const patch: UpdateSetDTO = { targetReps: 10, completed: true, notes: 'All reps easy' };
         const res = await request.patch(`/api/sets/${id}`).send(patch).expect(200);
         expect(res.body.targetReps).toBe(10);
     });
@@ -69,7 +70,7 @@ describe('Set API', () => {
     });
 
     it('should reject invalid type on patch (completed not boolean)', async () => {
-        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 5 } as any).expect(201);
+        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 5 }).expect(201);
         const id = c.body.id;
         const res = await request.patch(`/api/sets/${id}`).send({ completed: 'yes' }).expect(400);
         expect(res.body.message).toBe('Validation failed');
@@ -77,7 +78,7 @@ describe('Set API', () => {
     });
 
     it('should toggle completion false->true->false', async () => {
-        const created = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 2 } as any).expect(201);
+        const created = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 2 }).expect(201);
         const id = created.body.id;
         expect(created.body.completed).toBe(false);
         const toTrue = await request.patch(`/api/sets/${id}`).send({ completed: true }).expect(200);

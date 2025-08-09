@@ -1,20 +1,12 @@
-import * as supertest from 'supertest';
-import { app } from '../../setup';
-import { testDataSource } from '../../utils/test-data-source';
-import { Repository } from 'typeorm';
-import { Program } from '../../../entity/program';
-import { User } from '../../../entity/User';
-import { Cycle } from '../../../entity/cycle';
-import { Block } from '../../../entity/block';
 import { CreateProgramDTO, CreateCycleDTO, CreateBlockDTO, UpdateBlockDTO } from '@pwrprogram/shared';
+import * as supertest from 'supertest';
+
+import { app } from '../../setup';
 
 const request = supertest.default(app);
 
 describe('Block API', () => {
-    let programRepo: Repository<Program>;
-    let cycleRepo: Repository<Cycle>;
-    let blockRepo: Repository<Block>;
-    let userRepo: Repository<User>;
+    // Removed unused repository variables
     let userID: string;
     let programID: string;
     let cycleID: string;
@@ -30,10 +22,7 @@ describe('Block API', () => {
     }
 
     beforeAll(async () => {
-        programRepo = testDataSource.getRepository(Program);
-        cycleRepo = testDataSource.getRepository(Cycle);
-        blockRepo = testDataSource.getRepository(Block);
-        userRepo = testDataSource.getRepository(User);
+        // Repository retrieval removed (unused)
 
         // user + auth
         const userRes = await request.post('/api/users').send({
@@ -54,7 +43,7 @@ describe('Block API', () => {
     });
 
     it('should create a block in a cycle and return DTO with links', async () => {
-        const payload: CreateBlockDTO = { name: 'Base Block', description: 'Hypertrophy', goals: ['Size'], sessionsPerWeek: 4 } as any;
+        const payload: CreateBlockDTO = { name: 'Base Block', description: 'Hypertrophy', goals: ['Size'], sessionsPerWeek: 4 };
         const res = await request.post(`/api/blocks/${cycleID}/blocks`).send(payload).expect(201);
         expect(res.body).toHaveProperty('id');
         expect(res.body.name).toBe(payload.name);
@@ -89,7 +78,7 @@ describe('Block API', () => {
     it('should patch a block and reflect updated fields', async () => {
         const createRes = await request.post(`/api/blocks/${cycleID}/blocks`).send({ name: 'PatchBlock' }).expect(201);
         const blockId = createRes.body.id;
-        const patchPayload: UpdateBlockDTO = { name: 'Patched Block', description: 'Updated block', completed: true, sessionsPerWeek: 5 } as any;
+        const patchPayload: UpdateBlockDTO = { name: 'Patched Block', description: 'Updated block', completed: true, sessionsPerWeek: 5 };
         const patchRes = await request.patch(`/api/blocks/${blockId}`).send(patchPayload).expect(200);
         expect(patchRes.body.name).toBe('Patched Block');
         expect(patchRes.body.description).toBe('Updated block');

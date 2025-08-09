@@ -1,13 +1,14 @@
 import "reflect-metadata"
 import { DataSource } from "typeorm"
-import { ensureDatabase } from './utils/ensure-database';
-import { User } from "./entity/User"
-import { Program } from "./entity/program"
-import { Cycle } from "./entity/cycle"
+
 import { Block } from "./entity/block"
-import { Session } from "./entity/session"
+import { Cycle } from "./entity/cycle"
 import { Exercise } from "./entity/exercise"
+import { Program } from "./entity/program"
+import { Session } from "./entity/session"
 import { Set } from "./entity/set"
+import { User } from "./entity/User"
+import { ensureDatabase } from './utils/ensure-database';
 
 export const AppDataSource = new DataSource({
     type: "postgres",

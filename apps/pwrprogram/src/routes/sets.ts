@@ -1,9 +1,10 @@
 
+import { CreateSetDTO, UpdateSetDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
-import { UnauthorizedException } from '../errors/unauthorizederror';
-import { Set } from '../entity/set';
+
 import { Exercise } from '../entity/exercise';
-import { SetDTO, CreateSetDTO, UpdateSetDTO } from '@pwrprogram/shared';
+import { Set } from '../entity/set';
+import { UnauthorizedException } from '../errors/unauthorizederror';
 import { toSetDTO } from '../mappers/set.mapper';
 import { validateRequest } from '../middleware/validation.middleware';
 

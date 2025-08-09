@@ -1,13 +1,14 @@
-import { testDataSource } from './utils/test-data-source';
-import { ensureDatabases } from '../utils/ensure-database';
-import { createApp } from '../index';
-import { Set } from '../entity/set';
-import { Exercise } from '../entity/exercise';
-import { Session } from '../entity/session';
 import { Block } from '../entity/block';
 import { Cycle } from '../entity/cycle';
+import { Exercise } from '../entity/exercise';
 import { Program } from '../entity/program';
+import { Session } from '../entity/session';
+import { Set } from '../entity/set';
 import { User } from '../entity/User';
+import { createApp } from '../index';
+import { ensureDatabases } from '../utils/ensure-database';
+
+import { testDataSource } from './utils/test-data-source';
 
 // Create and export the test app instance
 export const app = createApp(testDataSource);

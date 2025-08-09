@@ -1,9 +1,10 @@
 
-import { AppDataSource } from "./data-source";
-import express from 'express';
 import cookieParser from 'cookie-parser';
-import mountRoutes from './routes/index';
+import express from 'express';
+
+import { AppDataSource } from "./data-source";
 import { errorHandler } from './middleware/error.middleware';
+import mountRoutes from './routes/index';
 
 export function createApp(dataSource = AppDataSource) {
     const app = express();
@@ -17,7 +18,7 @@ export function createApp(dataSource = AppDataSource) {
 
 // Only start server if run directly (not in tests)
 if (require.main === module) {
-    AppDataSource.initialize().then(async connection => {
+    AppDataSource.initialize().then(async () => {
         const app = createApp(AppDataSource);
         const port = 3000;
         app.listen(port, () => {

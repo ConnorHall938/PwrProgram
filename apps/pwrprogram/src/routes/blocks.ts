@@ -1,13 +1,11 @@
 
+import { CreateBlockDTO, UpdateBlockDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
-import { UnauthorizedException } from '../errors/unauthorizederror';
+
 import { Block } from '../entity/block';
-import { BlockDTO, CreateBlockDTO, UpdateBlockDTO } from '@pwrprogram/shared';
+import { UnauthorizedException } from '../errors/unauthorizederror';
 import { toBlockDTO } from '../mappers/block.mapper';
 import { validateRequest } from '../middleware/validation.middleware';
-import { Session } from '../entity/session';
-import { SessionDTO } from '@pwrprogram/shared';
-import { toSessionDTO } from '../mappers/session.mapper';
 
 export function blocksRouter(dataSource): Express.Router {
     const router = Express.Router({ mergeParams: true });

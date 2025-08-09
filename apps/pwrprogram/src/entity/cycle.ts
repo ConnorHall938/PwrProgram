@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
-import { Program } from "./program"
+import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
+
 import { Block } from "./block"
+import { Program } from "./program"
 
 @Entity()
 export class Cycle {

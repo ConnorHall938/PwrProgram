@@ -1,22 +1,18 @@
-import * as supertest from 'supertest';
-import { app } from '../../setup';
-import { testDataSource } from '../../utils/test-data-source';
-import { Repository } from 'typeorm';
-import { Program } from '../../../entity/program';
-import { User } from '../../../entity/User';
-import { Cycle } from '../../../entity/cycle';
-import { Block } from '../../../entity/block';
-import { Session } from '../../../entity/session';
 import { CreateProgramDTO, CreateCycleDTO, CreateBlockDTO, CreateSessionDTO, UpdateSessionDTO } from '@pwrprogram/shared';
+import * as supertest from 'supertest';
+
+// Removed unused repository/entity imports
+import { app } from '../../setup';
 
 const request = supertest.default(app);
 
 describe('Session API', () => {
-    let programRepo: Repository<Program>;
-    let cycleRepo: Repository<Cycle>;
-    let blockRepo: Repository<Block>;
-    let sessionRepo: Repository<Session>;
-    let userRepo: Repository<User>;
+    // Repository variables removed (not directly used)
+    // let programRepo: Repository<Program>;
+    // let cycleRepo: Repository<Cycle>;
+    // let blockRepo: Repository<Block>;
+    // let sessionRepo: Repository<Session>;
+    // let userRepo: Repository<User>;
     let userID: string;
     let programID: string;
     let cycleID: string;
@@ -30,11 +26,7 @@ describe('Session API', () => {
     function auth(r: supertest.Test, cookie: string = userCookie) { return r.set('Cookie', [cookie]); }
 
     beforeAll(async () => {
-        programRepo = testDataSource.getRepository(Program);
-        cycleRepo = testDataSource.getRepository(Cycle);
-        blockRepo = testDataSource.getRepository(Block);
-        sessionRepo = testDataSource.getRepository(Session);
-        userRepo = testDataSource.getRepository(User);
+        // Repositories retrieved directly via API usage only; local vars removed.
 
         const userRes = await request.post('/api/users').send({ firstName: 'SessionUser', email: `session-${Date.now()}@example.com`, password: 'securepass' }).expect(201);
         userID = userRes.body.id;
@@ -49,7 +41,7 @@ describe('Session API', () => {
     });
 
     it('should create a session and return DTO with links', async () => {
-        const payload: CreateSessionDTO = { name: 'Day 1', description: 'Upper body' } as any;
+        const payload: CreateSessionDTO = { name: 'Day 1', description: 'Upper body' };
         const res = await request.post(`/api/sessions/${blockID}/sessions`).send(payload).expect(201);
         expect(res.body).toHaveProperty('id');
         expect(res.body.name).toBe(payload.name);
@@ -77,7 +69,7 @@ describe('Session API', () => {
     it('should patch a session', async () => {
         const c = await request.post(`/api/sessions/${blockID}/sessions`).send({ name: 'Patch Session' }).expect(201);
         const id = c.body.id;
-        const patch: UpdateSessionDTO = { name: 'Patched', description: 'Changed', completed: true } as any;
+        const patch: UpdateSessionDTO = { name: 'Patched', description: 'Changed', completed: true };
         const res = await request.patch(`/api/sessions/${id}`).send(patch).expect(200);
         expect(res.body.name).toBe('Patched');
         expect(res.body.description).toBe('Changed');

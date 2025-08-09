@@ -1,8 +1,9 @@
-import { plainToInstance } from 'class-transformer';
 import { ExerciseDTO } from '@pwrprogram/shared';
+import { plainToInstance } from 'class-transformer';
+
 import { Exercise } from '../entity/exercise';
-import { handleMapperError } from '../utils/mapper.utils';
 import { buildExerciseLinks } from '../utils/hateoas';
+import { handleMapperError } from '../utils/mapper.utils';
 
 export function toExerciseDTO(entity: Exercise): ExerciseDTO {
     if (!entity) {
