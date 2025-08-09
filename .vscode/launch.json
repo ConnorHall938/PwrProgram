@@ -7,6 +7,23 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Debug Jest Tests",
+            "program": "${workspaceFolder}/apps/pwrprogram/node_modules/jest/bin/jest.js",
+            "args": [
+                "--runInBand",
+                "--config",
+                "${workspaceFolder}/apps/pwrprogram/jest.config.ts"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "cwd": "${workspaceFolder}/apps/pwrprogram",
+            "env": {
+                "NODE_ENV": "test"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Program",
             "skipFiles": [
                 "<node_internals>/**"

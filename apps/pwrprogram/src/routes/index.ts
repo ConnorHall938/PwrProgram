@@ -1,6 +1,5 @@
 import base from './base';
 import { usersRouter } from './users';
-import { AppDataSource } from '../data-source';
 import { programsRouter } from './programs';
 import { setsRouter } from './sets';
 import { exercisesRouter } from './exercises';

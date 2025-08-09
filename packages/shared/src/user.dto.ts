@@ -1,17 +1,24 @@
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { IsString, MinLength, IsOptional, IsEmail, IsObject } from 'class-validator';
 
 export class CreateUserDTO {
     @Expose()
+    @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
     @IsString()
     firstName: string;
 
     @Expose()
     @IsOptional()
+    @Transform(({ value }) => {
+        if (typeof value !== 'string') return value;
+        const t = value.trim();
+        return t === '' ? undefined : t;
+    })
     @IsString()
     lastName?: string;
 
     @Expose()
+    @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
     @IsEmail()
     email: string;
 

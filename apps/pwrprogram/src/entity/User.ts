@@ -10,7 +10,7 @@ export class User {
     firstName: string;
 
     @Column({ unique: false, nullable: true })
-    lastName: string;
+    lastName?: string;
 
     @Column({ unique: true })
     email: string;
