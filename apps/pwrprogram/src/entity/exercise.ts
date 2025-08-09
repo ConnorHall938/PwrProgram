@@ -1,31 +1,31 @@
-import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
+import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
 
-import { Session } from "./session"
-import { Set } from "./set"
+import { Session } from "./session";
+import { Set } from "./set";
 
 @Entity()
 export class Exercise {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column()
-    sessionId: string
+    sessionId: string;
 
     @Column()
-    name: string
+    name: string;
 
     @Column({ nullable: true })
-    description?: string
+    description?: string;
 
     @Column({ default: false })
-    completed: boolean
+    completed: boolean;
 
     @Column({ nullable: true })
-    tutorial_url?: string
+    tutorial_url?: string;
 
     @ManyToOne(() => Session, (session) => session.exercises)
     @JoinColumn({ name: 'sessionId' })  // explicitly link FK column
-    session: Session
+    session: Session;
 
     @OneToMany(() => Set, (set) => set.exercise)
     sets: Set[];

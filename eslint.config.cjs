@@ -44,7 +44,10 @@ module.exports = [
                     caughtErrorsIgnorePattern: '^_', // allow try/catch unused error variable if prefixed
                     destructuredArrayIgnorePattern: '^_' // allow ignored array elements
                 }
-            ]
+            ],
+            // Semicolon enforcement
+            'semi': 'off', // disable base
+            '@typescript-eslint/semi': ['warn', 'always']
         }
     },
     { ignores: ['dist', 'node_modules', '**/*.js'] }

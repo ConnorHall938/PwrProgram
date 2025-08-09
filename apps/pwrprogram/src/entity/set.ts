@@ -5,45 +5,45 @@ import { Exercise } from "./exercise";
 @Entity()
 export class Set {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column()
-    exerciseId: string
+    exerciseId: string;
 
     @ManyToOne(() => Exercise, (exercise) => exercise.sets)
     @JoinColumn({ name: 'exerciseId' })  // explicitly link FK column
-    exercise: Exercise
+    exercise: Exercise;
 
     @Column({ nullable: true })
-    targetReps?: number
+    targetReps?: number;
 
     @Column({ nullable: true })
-    targetWeight?: number
+    targetWeight?: number;
 
     @Column({ nullable: true })
-    targetPercentage?: number
+    targetPercentage?: number;
 
     @Column({ nullable: true })
-    targetRpe?: number
+    targetRpe?: number;
 
     @Column({ nullable: true })
-    actualReps?: number
+    actualReps?: number;
 
     @Column({ nullable: true })
-    actualWeight?: number
+    actualWeight?: number;
 
     @Column({ nullable: true })
-    actualRpe?: number
+    actualRpe?: number;
 
     @Column({ nullable: false, default: false })
-    completed?: boolean
+    completed?: boolean;
 
     @Column({ nullable: true })
-    rest?: number
+    rest?: number;
 
     @Column({ nullable: true })
-    tempo?: string
+    tempo?: string;
 
     @Column({ nullable: true })
-    notes?: string
+    notes?: string;
 }

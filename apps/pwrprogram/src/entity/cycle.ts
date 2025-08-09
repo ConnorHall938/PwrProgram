@@ -1,31 +1,31 @@
-import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
+import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
 
-import { Block } from "./block"
-import { Program } from "./program"
+import { Block } from "./block";
+import { Program } from "./program";
 
 @Entity()
 export class Cycle {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column()
-    programId: string
+    programId: string;
 
     @Column()
-    name: string
+    name: string;
 
     @Column({ nullable: true })
-    description?: string
+    description?: string;
 
     @Column({ default: false })
-    completed: boolean
+    completed: boolean;
 
     @Column("text", { array: true, nullable: true })
-    goals?: string[]
+    goals?: string[];
 
     @ManyToOne(() => Program, (program) => program.cycles)
     @JoinColumn({ name: 'programId' })  // explicitly link FK column
-    program: Program
+    program: Program;
 
     @OneToMany(() => Block, (block) => block.cycle)
     blocks: Block[];

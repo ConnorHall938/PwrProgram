@@ -1,4 +1,24 @@
 {
+    // Formatting
     "editor.defaultFormatter": "vscode.typescript-language-features",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+
+    // ESLint integration
+    "eslint.enable": true,
+    "eslint.useFlatConfig": true,
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    // Auto fix on save (needs string value 'explicit' or just true for vscode later versions?)
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.rules.customizations": [
+        { "rule": "@typescript-eslint/no-unused-vars", "severity": "error" },
+        { "rule": "@typescript-eslint/no-explicit-any", "severity": "warn" },
+        { "rule": "import/order", "severity": "warn" }
+    ]
 }

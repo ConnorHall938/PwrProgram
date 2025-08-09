@@ -1,34 +1,34 @@
-import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm"
+import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
 
-import { Cycle } from "./cycle"
-import { Session } from "./session"
+import { Cycle } from "./cycle";
+import { Session } from "./session";
 
 @Entity()
 export class Block {
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column()
-    cycleId: string
+    cycleId: string;
 
     @Column()
-    name: string
+    name: string;
 
     @Column({ nullable: true })
-    description?: string
+    description?: string;
 
     @Column({ default: false })
-    completed: boolean
+    completed: boolean;
 
     @Column("text", { array: true, nullable: true })
-    goals?: string[]
+    goals?: string[];
 
     @Column({ nullable: false, default: 4 })
-    sessionsPerWeek: number
+    sessionsPerWeek: number;
 
     @ManyToOne(() => Cycle, (cycle) => cycle.blocks)
     @JoinColumn({ name: 'cycleId' })  // explicitly link FK column
-    cycle: Cycle
+    cycle: Cycle;
 
     @OneToMany(() => Session, (session) => session.block)
     sessions: Session[];

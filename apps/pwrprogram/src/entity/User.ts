@@ -1,11 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 
-import { Program } from "./program"
+import { Program } from "./program";
 @Entity()
 export class User {
 
     @PrimaryGeneratedColumn('uuid')
-    id: string
+    id: string;
 
     @Column({ unique: false })
     firstName: string;

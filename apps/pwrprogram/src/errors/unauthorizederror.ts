@@ -4,5 +4,5 @@ export class UnauthorizedException extends Error {
         this.name = 'UnauthorizedException';
         this.code = 401;
     }
-    code: number
+    code: number;
 }
