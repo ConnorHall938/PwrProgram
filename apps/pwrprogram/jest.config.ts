@@ -1,3 +1,5 @@
+import { max } from "class-validator";
+
 export default {
     preset: 'ts-jest',
     testEnvironment: 'node',
@@ -9,5 +11,6 @@ export default {
     },
     moduleFileExtensions: ['ts', 'js'],
     setupFilesAfterEnv: ['<rootDir>/src/testing/setup.ts'],
-    testTimeout: 10000 // Some DB operations might take time
+    testTimeout: 10000, // Some DB operations might take time
+    maxWorkers: 4
 };

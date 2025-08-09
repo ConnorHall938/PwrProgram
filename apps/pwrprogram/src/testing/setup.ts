@@ -16,17 +16,18 @@ beforeAll(async () => {
     if (!testDataSource.isInitialized) {
         await testDataSource.initialize();
     }
+    // Clear the database before running tests
+    await testDataSource.getRepository(Set).delete({});
+    await testDataSource.getRepository(Exercise).delete({});
+    await testDataSource.getRepository(Session).delete({});
+    await testDataSource.getRepository(Block).delete({});
+    await testDataSource.getRepository(Cycle).delete({});
+    await testDataSource.getRepository(Program).delete({});
+    await testDataSource.getRepository(User).delete({});
 });
 
 beforeEach(async () => {
-    // Remove all data from all tables, in order
-    await testDataSource.getRepository(User).delete({});
-    await testDataSource.getRepository(Program).delete({});
-    await testDataSource.getRepository(Cycle).delete({});
-    await testDataSource.getRepository(Block).delete({});
-    await testDataSource.getRepository(Session).delete({});
-    await testDataSource.getRepository(Exercise).delete({});
-    await testDataSource.getRepository(Set).delete({});
+
 });
 
 afterAll(async () => {

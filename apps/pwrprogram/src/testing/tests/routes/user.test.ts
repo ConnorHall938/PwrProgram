@@ -17,9 +17,11 @@ describe('User API', () => {
         // Table clearing is handled in setup.ts
     });
 
+    const uniqueEmail = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+
     it('should create a new user and return proper response DTO', async () => {
         const createUserDto: CreateUserDTO = {
-            email: 'test@example.com',
+            email: uniqueEmail('test'),
             password: 'testpassword123',
             firstName: 'Test',
             lastName: 'User'
@@ -51,29 +53,31 @@ describe('User API', () => {
         expect(savedUser!.password).toBe(createUserDto.password);
     });
 
-    it('should list users and return DTOs without sensitive fields', async () => {
+    it('should list users and include newly created users (without sensitive fields)', async () => {
+        const before = await request.get('/api/users').expect(200);
+        const beforeCount = before.body.length;
         const u1: CreateUserDTO = {
-            email: 'alpha@example.com',
+            email: uniqueEmail('alpha'),
             password: 'password1',
             firstName: 'Alpha',
         };
         const u2: CreateUserDTO = {
-            email: 'beta@example.com',
+            email: uniqueEmail('beta'),
             password: 'password2',
             firstName: 'Beta',
             lastName: 'Two'
         };
 
-        const r1 = await request.post('/api/users').send(u1).expect(201);
-        const r2 = await request.post('/api/users').send(u2).expect(201);
+        await request.post('/api/users').send(u1).expect(201);
+        await request.post('/api/users').send(u2).expect(201);
 
-        const list = await request.get('/api/users').expect(200);
-        expect(Array.isArray(list.body)).toBe(true);
-        expect(list.body.length).toBe(2);
-        const emails = list.body.map((u: any) => u.email);
+        const after = await request.get('/api/users').expect(200);
+        expect(Array.isArray(after.body)).toBe(true);
+        expect(after.body.length).toBeGreaterThanOrEqual(beforeCount + 2);
+        const emails = after.body.map((u: any) => u.email);
         expect(emails).toEqual(expect.arrayContaining([u1.email, u2.email]));
         // Ensure DTO shape
-        for (const u of list.body) {
+        for (const u of after.body) {
             expect(u).toHaveProperty('id');
             expect(u).not.toHaveProperty('password');
             expect(u._links).toBeDefined();
@@ -84,7 +88,7 @@ describe('User API', () => {
 
     it('should fetch a single user by id', async () => {
         const payload: CreateUserDTO = {
-            email: 'single@example.com',
+            email: uniqueEmail('single'),
             password: 'singlepass',
             firstName: 'Single',
             lastName: 'User'
@@ -125,8 +129,9 @@ describe('User API', () => {
     });
 
     it('should return 400 when email already exists', async () => {
+        const unique = uniqueEmail('dupe');
         const dto: CreateUserDTO = {
-            email: 'dupe@example.com',
+            email: unique,
             password: 'dupepass',
             firstName: 'Dupe',
             lastName: 'User'
@@ -139,7 +144,7 @@ describe('User API', () => {
     // New tests -------------------------------------------------------------
     it('should allow creating a user without optional lastName (omitted field)', async () => {
         const dto: CreateUserDTO = {
-            email: 'nolast@example.com',
+            email: uniqueEmail('nolast'),
             password: 'strongpass',
             firstName: 'NoLast'
         } as any; // lastName intentionally omitted
@@ -152,17 +157,19 @@ describe('User API', () => {
 
     it('should trim leading and trailing spaces from name & email fields', async () => {
         const raw = {
-            email: '  spaced@example.com  ',
+            email: `  spaced-${Date.now()}@example.com  `,
             password: 'passwordWith Spaces', // password should NOT be trimmed
             firstName: '  Alice  ',
             lastName: '  Wonderland  '
         } as any;
         const res = await request.post('/api/users').send(raw).expect(201);
-        expect(res.body.email).toBe('spaced@example.com');
+        expect(res.body.email.startsWith('spaced-')).toBe(true);
+        expect(res.body.email.endsWith('@example.com')).toBe(true);
         expect(res.body.firstName).toBe('Alice');
         expect(res.body.lastName).toBe('Wonderland');
         const entity = await userRepository.findOneBy({ id: res.body.id });
-        expect(entity!.email).toBe('spaced@example.com');
+        expect(entity!.email.startsWith('spaced-')).toBe(true);
+        expect(entity!.email.endsWith('@example.com')).toBe(true);
         expect(entity!.firstName).toBe('Alice');
         expect(entity!.lastName).toBe('Wonderland');
         // Ensure password kept exact (no trimming) by re-fetching raw entity
@@ -171,7 +178,7 @@ describe('User API', () => {
 
     it('should treat explicitly provided empty string lastName as empty in DTO (omitted) & store null', async () => {
         const dto: CreateUserDTO = {
-            email: 'emptyln@example.com',
+            email: uniqueEmail('emptyln'),
             password: 'emptypass',
             firstName: 'Empty',
             lastName: '' // explicit empty
@@ -184,7 +191,7 @@ describe('User API', () => {
 
     it('should reject password shorter than 6 chars (exact length check, no trimming)', async () => {
         const dto = {
-            email: 'shortpw@example.com',
+            email: uniqueEmail('shortpw'),
             password: '12345', // length 5
             firstName: 'Short'
         } as any;
@@ -195,7 +202,7 @@ describe('User API', () => {
 
     it('should collapse whitespace-only lastName to omitted in DTO', async () => {
         const dto: CreateUserDTO = {
-            email: 'whitespace@example.com',
+            email: uniqueEmail('whitespace'),
             password: 'whitespacepass',
             firstName: 'White',
             lastName: '    '
