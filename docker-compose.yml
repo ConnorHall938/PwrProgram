@@ -1,0 +1,65 @@
+services:
+  # Your Node.js API
+  api:
+    build:
+      context: .
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      # Database connection environment variables
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_DATABASE: pwrprogram
+      NODE_ENV: development
+    depends_on:
+      - postgres
+    volumes:
+      # Mount source code for development (optional)
+      - ./apps/pwrprogram/src:/app/apps/pwrprogram/src
+      - ./packages/shared/src:/app/packages/shared/src
+    networks:
+      - pwrprogram-network
+
+  # Test service (runs tests and exits)
+  test:
+    build:
+      context: .
+      target: test
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_DATABASE: pwrprogram_test
+      NODE_ENV: test
+    depends_on:
+      - postgres
+    networks:
+      - pwrprogram-network
+
+  # PostgreSQL Database (serves both dev and test databases)
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pwrprogram
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persist database data
+      - postgres_data:/var/lib/postgresql/data
+      # Create test database on startup
+      - ./init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
+    networks:
+      - pwrprogram-network
+
+networks:
+  pwrprogram-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -6,7 +6,7 @@ import { Session } from '../entity/session';
 import { Set } from '../entity/set';
 import { User } from '../entity/User';
 import { createApp } from '../index';
-import { ensureDatabases } from '../utils/ensure-database';
+import { ensureDatabase } from '../utils/ensure-database';
 
 import { testDataSource } from './utils/test-data-source';
 
@@ -16,11 +16,12 @@ export const app = createApp(testDataSource);
 beforeAll(async () => {
     // Only initialize if not already initialized
     if (!testDataSource.isInitialized) {
-        await ensureDatabases(['pwrprogram_test'], {
-            host: 'localhost',
-            port: 5432,
-            user: 'postgres',
-            password: 'password'
+        await ensureDatabase({
+            host: process.env.DB_HOST || 'localhost',
+            port: parseInt(process.env.DB_PORT || '5432'),
+            user: process.env.DB_USERNAME || 'postgres',
+            password: process.env.DB_PASSWORD || 'password',
+            database: process.env.DB_DATABASE || 'pwrprogram_test'
         });
         await testDataSource.initialize();
     }

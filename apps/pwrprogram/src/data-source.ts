@@ -12,11 +12,11 @@ import { ensureDatabase } from './utils/ensure-database';
 
 export const AppDataSource = new DataSource({
     type: "postgres",
-    host: "localhost",
-    port: 5432,
-    username: "postgres",
-    password: "password",
-    database: "pwrprogram",
+    host: process.env.DB_HOST || "localhost",
+    port: parseInt(process.env.DB_PORT || "5432"),
+    username: process.env.DB_USERNAME || "postgres",
+    password: process.env.DB_PASSWORD || "password",
+    database: process.env.DB_DATABASE || "pwrprogram",
     synchronize: true,
     logging: false,
     entities: [User, Program, Cycle, Block, Session, Exercise, Set],
@@ -25,5 +25,5 @@ export const AppDataSource = new DataSource({
 });
 
 // Ensure database exists (fire and forget; initialization should await this in app bootstrap if strict ordering needed)
-ensureDatabase({ host: 'localhost', port: 5432, user: 'postgres', password: 'password', database: 'pwrprogram' })
+ensureDatabase({ host: process.env.DB_HOST || "localhost", port: parseInt(process.env.DB_PORT || "5432"), user: process.env.DB_USERNAME || "postgres", password: process.env.DB_PASSWORD || "password", database: process.env.DB_DATABASE || "pwrprogram" })
     .catch(err => console.error('Failed ensuring main database:', err));
