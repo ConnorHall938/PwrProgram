@@ -60,7 +60,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: pnpm --filter pwrprogram test
+        run: pnpm --filter pwrprogram test:coverage
 
       - name: Upload Jest coverage (if generated)
         if: success() && hashFiles('apps/pwrprogram/coverage/lcov.info') != ''
