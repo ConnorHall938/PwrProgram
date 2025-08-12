@@ -1,7 +1,7 @@
 import { ExerciseDTO } from '@pwrprogram/shared';
 import { plainToInstance } from 'class-transformer';
 
-import { Exercise } from '../entity/exercise';
+import { Exercise } from '../entity';
 import { buildExerciseLinks } from '../utils/hateoas';
 import { handleMapperError } from '../utils/mapper.utils';
 

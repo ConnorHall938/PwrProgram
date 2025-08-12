@@ -2,9 +2,9 @@
 import { CreateCycleDTO, UpdateCycleDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
 
-import { Cycle } from '../entity/cycle';
+import { Cycle } from '../entity';
 import { UnauthorizedException } from '../errors/unauthorizederror';
-import { toCycleDTO } from '../mappers/cycle.mapper';
+import { toCycleDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
 
 export function cyclesRouter(dataSource): Express.Router {

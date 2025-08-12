@@ -2,10 +2,9 @@
 import { CreateExerciseDTO, UpdateExerciseDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
 
-import { Exercise } from '../entity/exercise';
-import { Set } from '../entity/set';
+import { Exercise, Set } from '../entity';
 import { UnauthorizedException } from '../errors/unauthorizederror';
-import { toExerciseDTO } from '../mappers/exercise.mapper';
+import { toExerciseDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
 
 export function exercisesRouter(dataSource): Express.Router {

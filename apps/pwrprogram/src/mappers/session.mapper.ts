@@ -1,7 +1,7 @@
 import { SessionDTO } from '@pwrprogram/shared';
 import { plainToInstance } from 'class-transformer';
 
-import { Session } from '../entity/session';
+import { Session } from '../entity';
 import { buildSessionLinks } from '../utils/hateoas';
 import { handleMapperError } from '../utils/mapper.utils';
 

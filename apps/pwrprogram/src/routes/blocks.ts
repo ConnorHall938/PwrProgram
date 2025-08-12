@@ -2,9 +2,9 @@
 import { CreateBlockDTO, UpdateBlockDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
 
-import { Block } from '../entity/block';
+import { Block } from '../entity';
 import { UnauthorizedException } from '../errors/unauthorizederror';
-import { toBlockDTO } from '../mappers/block.mapper';
+import { toBlockDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
 
 export function blocksRouter(dataSource): Express.Router {

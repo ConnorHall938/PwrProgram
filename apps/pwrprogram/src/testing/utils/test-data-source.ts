@@ -1,12 +1,6 @@
 import { DataSource } from 'typeorm';
 
-import { Block } from '../../entity/block';
-import { Cycle } from '../../entity/cycle';
-import { Exercise } from '../../entity/exercise';
-import { Program } from '../../entity/program';
-import { Session } from '../../entity/session';
-import { Set } from '../../entity/set';
-import { User } from '../../entity/User';
+import { Block, Cycle, Exercise, Program, Session, Set, User } from '../../entity';
 
 // Create a test data source with the same config but different database
 export const testDataSource = new DataSource({

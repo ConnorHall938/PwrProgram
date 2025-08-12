@@ -1,6 +1,6 @@
 import { UserResponseDTO } from '@pwrprogram/shared';
 
-import { User } from '../entity/User';
+import { User } from '../entity';
 import { buildUserLinks } from '../utils/hateoas';
 
 export function toUserDTO(entity: User): UserResponseDTO {

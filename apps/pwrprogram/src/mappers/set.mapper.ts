@@ -1,7 +1,7 @@
 import { SetDTO } from '@pwrprogram/shared';
 import { plainToInstance } from 'class-transformer';
 
-import { Set } from '../entity/set';
+import { Set } from '../entity';
 import { buildSetLinks } from '../utils/hateoas';
 import { handleMapperError } from '../utils/mapper.utils';
 

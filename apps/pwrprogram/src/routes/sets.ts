@@ -2,10 +2,9 @@
 import { CreateSetDTO, UpdateSetDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
 
-import { Exercise } from '../entity/exercise';
-import { Set } from '../entity/set';
+import { Exercise, Set } from '../entity';
 import { UnauthorizedException } from '../errors/unauthorizederror';
-import { toSetDTO } from '../mappers/set.mapper';
+import { toSetDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
 
 export function setsRouter(dataSource): Express.Router {

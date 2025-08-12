@@ -20,5 +20,7 @@
         { "rule": "@typescript-eslint/no-unused-vars", "severity": "error" },
         { "rule": "@typescript-eslint/no-explicit-any", "severity": "warn" },
         { "rule": "import/order", "severity": "warn" }
-    ]
+    ],
+    "eslint.format.enable": true,
+    "eslint.run": "onSave"
 }

@@ -1,7 +1,7 @@
 import { BlockDTO } from '@pwrprogram/shared';
 import { plainToInstance } from 'class-transformer';
 
-import { Block } from '../entity/block';
+import { Block } from '../entity';
 import { buildBlockLinks } from '../utils/hateoas';
 import { handleMapperError } from '../utils/mapper.utils';
 

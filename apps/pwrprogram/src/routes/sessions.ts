@@ -2,9 +2,9 @@
 import { CreateSessionDTO, UpdateSessionDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
 
-import { Session } from '../entity/session';
+import { Session } from '../entity';
 import { UnauthorizedException } from '../errors/unauthorizederror';
-import { toSessionDTO } from '../mappers/session.mapper';
+import { toSessionDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
 
 export function sessionsRouter(dataSource): Express.Router {

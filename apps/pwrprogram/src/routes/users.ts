@@ -2,8 +2,8 @@
 import { CreateUserDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
 
-import { User } from "../entity/User";
-import { toUserDTO } from '../mappers/user.mapper';
+import { User } from "../entity";
+import { toUserDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
 
 export function usersRouter(dataSource): Express.Router {

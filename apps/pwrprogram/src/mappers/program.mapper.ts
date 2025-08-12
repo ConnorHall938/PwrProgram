@@ -2,7 +2,7 @@
 import { ProgramDTO } from '@pwrprogram/shared';
 import { plainToInstance } from 'class-transformer';
 
-import { Program } from '../entity/program';
+import { Program } from '../entity';
 import { buildProgramLinks } from '../utils/hateoas';
 import { handleMapperError } from '../utils/mapper.utils';
 

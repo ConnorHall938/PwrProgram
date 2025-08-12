@@ -1,7 +1,7 @@
 import { CycleDTO } from '@pwrprogram/shared';
 import { plainToInstance } from 'class-transformer';
 
-import { Cycle } from '../entity/cycle';
+import { Cycle } from '../entity';
 import { buildCycleLinks } from '../utils/hateoas';
 import { handleMapperError } from '../utils/mapper.utils';
 

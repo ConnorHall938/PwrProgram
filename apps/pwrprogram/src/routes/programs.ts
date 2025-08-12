@@ -2,9 +2,9 @@
 import { CreateProgramDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
 
-import { Program } from '../entity/program';
+import { Program } from '../entity';
 import { UnauthorizedException } from '../errors/unauthorizederror';
-import { toProgramDTO } from '../mappers/program.mapper';
+import { toProgramDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
 import { get_user_from_request } from '../session-store';
 
