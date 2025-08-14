@@ -22,5 +22,10 @@
         { "rule": "import/order", "severity": "warn" }
     ],
     "eslint.format.enable": true,
-    "eslint.run": "onSave"
+    "eslint.run": "onSave",
+    // Ensure ESLint runs from the correct package folders in this monorepo
+    "eslint.workingDirectories": [
+        { "pattern": "apps/*/" },
+        { "pattern": "packages/*/" }
+    ]
 }

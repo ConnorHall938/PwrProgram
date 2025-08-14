@@ -78,14 +78,14 @@ export function sessionsRouter(dataSource): Express.Router {
         }
     });
 
-    router.get('/:blockId/sessions', async (req, res) => {
+    router.get('/sessions/:blockId/sessions', async (req, res) => {
         const sessionList = await sessionRepo.find({
             where: { blockId: req.params.blockId }
         });
         res.status(200).json(sessionList.map(toSessionDTO));
     });
 
-    router.post('/:blockId/sessions', validateRequest(CreateSessionDTO), async (req, res) => {
+    router.post('/sessions/:blockId/sessions', validateRequest(CreateSessionDTO), async (req, res) => {
         const body = req.body;
         const session = sessionRepo.create({
             name: body.name,

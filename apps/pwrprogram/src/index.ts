@@ -1,9 +1,11 @@
 
 import cookieParser from 'cookie-parser';
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
 
-import { AppDataSource } from "./data-source";
+import { AppDataSource } from './data-source';
 import { errorHandler } from './middleware/error.middleware';
+import { openApiSpec } from './openapi';
 import mountRoutes from './routes/index';
 
 export function createApp(dataSource = AppDataSource) {
@@ -11,6 +13,8 @@ export function createApp(dataSource = AppDataSource) {
     app.use(express.json());
     app.use(cookieParser());
     mountRoutes(app, dataSource);
+    // Swagger docs
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
     // Central error handler (after routes)
     app.use(errorHandler);
     return app;

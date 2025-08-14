@@ -78,7 +78,7 @@ export function exercisesRouter(dataSource): Express.Router {
     });
 
     // Create new exercise in session
-    router.post('/:sessionId/exercises', validateRequest(CreateExerciseDTO), async (req, res) => {
+    router.post('/sessions/:sessionId/exercises', validateRequest(CreateExerciseDTO), async (req, res) => {
         try {
             const exercise = new Exercise();
             exerciseRepo.merge(exercise, req.body);
@@ -97,7 +97,7 @@ export function exercisesRouter(dataSource): Express.Router {
         }
     });
 
-    router.get('/:sessionId/exercises', async (req, res) => {
+    router.get('/sessions/:sessionId/exercises', async (req, res) => {
         try {
             const exercises = await exerciseRepo.find({
                 where: { sessionId: req.params.sessionId }
@@ -112,40 +112,6 @@ export function exercisesRouter(dataSource): Express.Router {
         }
     });
 
-    router.get('/:exerciseId/overview', async (req, res) => {
-        try {
-            const exercise = await exerciseRepo.findOne({
-                where: { id: req.params.exerciseId, sessionId: req.session_id }
-            });
-            if (!exercise) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: 'Exercise not found'
-                });
-            }
-
-            // Get the sets for this exercise
-            const sets = await setRepo.find({
-                where: { exerciseId: exercise.id }
-            });
-
-            const overview = {
-                id: exercise.id,
-                name: exercise.name,
-                description: exercise.description,
-                completed: exercise.completed,
-                sets: sets
-            };
-
-            res.status(200).json(overview);
-        } catch (error) {
-            console.error('Error fetching exercise overview:', error);
-            res.status(500).json({
-                status: 'error',
-                message: 'Failed to fetch exercise overview'
-            });
-        }
-    });
 
     return router;
 }

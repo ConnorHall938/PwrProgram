@@ -34,6 +34,7 @@ module.exports = [
             'import/order': ['warn', { 'newlines-between': 'always', alphabetize: { order: 'asc', caseInsensitive: true } }],
             // Disable base rule so TS version is authoritative; TS rule below enforces unused vars.
             'no-unused-vars': 'off',
+            'no-undef': 'off',
             '@typescript-eslint/no-explicit-any': 'warn',
             '@typescript-eslint/no-unused-vars': [
                 'error',
@@ -45,9 +46,8 @@ module.exports = [
                     destructuredArrayIgnorePattern: '^_' // allow ignored array elements
                 }
             ],
-            // Semicolon enforcement
-            'semi': 'off', // disable base
-            '@typescript-eslint/semi': ['warn', 'always']
+            // Semicolon enforcement (use core rule; no plugin needed)
+            'semi': ['warn', 'always']
         }
     },
     { ignores: ['dist', 'node_modules', '**/*.js'] }

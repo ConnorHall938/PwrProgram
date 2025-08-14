@@ -26,6 +26,8 @@
       "class-validator": "^0.14.2",
       "cookie-parser": "^1.4.7",
       "express": "^5.1.0",
+   "class-validator-jsonschema": "^5.0.0",
+   "swagger-ui-express": "^5.0.1",
       "pg": "^8.4.0",
       "reflect-metadata": "^0.1.14",
       "typeorm": "0.3.20",
@@ -37,8 +39,8 @@
       "typeorm": "typeorm-ts-node-commonjs",
       "test": "jest",
       "test:watch": "jest --watch",
-      "test:coverage": "jest --coverage"
-   ,
+   "test:coverage": "jest --coverage",
+   "openapi:print": "ts-node scripts/print-openapi.ts",
       "lint": "eslint --ext .ts ./src ../../packages/shared/src",
       "lint:fix": "pnpm lint --fix",
       "format": "prettier --write \"**/*.{ts,js,json,md}\""

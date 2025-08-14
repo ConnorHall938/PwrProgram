@@ -76,14 +76,14 @@ export function blocksRouter(dataSource): Express.Router {
         }
     });
 
-    router.get('/:cycleId/blocks', async (req, res) => {
+    router.get('/cycles/:cycleId/blocks', async (req, res) => {
         const blockList = await blockRepo.find({
             where: { cycleId: req.params.cycleId }
         });
         res.status(200).json(blockList.map(toBlockDTO));
     });
 
-    router.post('/:cycleId/blocks', validateRequest(CreateBlockDTO), async (req, res) => {
+    router.post('/cycles/:cycleId/blocks', validateRequest(CreateBlockDTO), async (req, res) => {
         const body = req.body;
         const block = blockRepo.create({
             name: body.name,

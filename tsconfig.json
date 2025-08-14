@@ -1,0 +1,7 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/pwrprogram" },
+    { "path": "./packages/shared" }
+  ]
+}

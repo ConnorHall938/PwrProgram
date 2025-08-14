@@ -60,7 +60,7 @@ export function cyclesRouter(dataSource): Express.Router {
         res.status(200).json(dto);
     });
 
-    router.post('/:programId/cycles', validateRequest(CreateCycleDTO), async (req, res) => {
+    router.post('/programs/:programId/cycles', validateRequest(CreateCycleDTO), async (req, res) => {
         const body = req.body;
         const cycle = cycleRepo.create({
             programId: req.params.programId,
@@ -74,7 +74,7 @@ export function cyclesRouter(dataSource): Express.Router {
         res.status(201).json(dto);
     });
 
-    router.get('/:programId/cycles', async (req, res) => {
+    router.get('/programs/:programId/cycles', async (req, res) => {
         const cycleList = await cycleRepo.find({
             where: { programId: req.params.programId }
         });

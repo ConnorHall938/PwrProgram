@@ -26,7 +26,7 @@ export function setsRouter(dataSource): Express.Router {
         }
     });
 
-    router.post('/:exerciseId/sets', validateRequest(CreateSetDTO), async (req, res) => {
+    router.post('/sessions/:exerciseId/sets', validateRequest(CreateSetDTO), async (req, res) => {
         try {
             const exercise = await exerciseRepo.findOne({
                 where: { id: req.params.exerciseId, sessionId: req.session_id }
@@ -67,7 +67,7 @@ export function setsRouter(dataSource): Express.Router {
         }
     });
 
-    router.get('/:exerciseId/sets', async (req, res) => {
+    router.get('/sessions/:exerciseId/sets', async (req, res) => {
         try {
             const setList = await setRepo.find({
                 where: { exerciseId: req.params.exerciseId }
