@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 
 import { Block, Cycle, Exercise, Program, Session, Set, User } from '../../entity';
+import { SessionStore } from '../../entity/SessionStore';
 
 // Create a test data source with the same config but different database
 export const testDataSource = new DataSource({
@@ -10,7 +11,7 @@ export const testDataSource = new DataSource({
     username: process.env.DB_USERNAME || "postgres",
     password: process.env.DB_PASSWORD || "password",
     database: process.env.DB_DATABASE || "pwrprogram_test",
-    entities: [User, Program, Cycle, Block, Session, Exercise, Set],
+    entities: [User, Program, Cycle, Block, Session, Exercise, Set, SessionStore],
     dropSchema: true,
     synchronize: true,
     logging: false

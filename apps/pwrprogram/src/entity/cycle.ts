@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
+import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Index } from "typeorm";
 
 import { Block } from "./block";
 import { Program } from "./program";
@@ -8,6 +8,7 @@ export class Cycle {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index()
     @Column()
     programId: string;
 
@@ -23,10 +24,19 @@ export class Cycle {
     @Column("text", { array: true, nullable: true })
     goals?: string[];
 
-    @ManyToOne(() => Program, (program) => program.cycles)
-    @JoinColumn({ name: 'programId' })  // explicitly link FK column
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt?: Date;
+
+    @ManyToOne(() => Program, (program) => program.cycles, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'programId' })
     program: Program;
 
-    @OneToMany(() => Block, (block) => block.cycle)
+    @OneToMany(() => Block, (block) => block.cycle, { cascade: true })
     blocks: Block[];
 }

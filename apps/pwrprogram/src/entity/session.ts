@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
+import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Index } from "typeorm";
 
 import { Block } from "./block";
 import { Exercise } from "./exercise";
@@ -8,6 +8,7 @@ export class Session {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index()
     @Column()
     blockId: string;
 
@@ -23,10 +24,19 @@ export class Session {
     @Column("text", { array: true, nullable: true })
     goals?: string[];
 
-    @ManyToOne(() => Block, (block) => block.sessions)
-    @JoinColumn({ name: 'blockId' })  // explicitly link FK column
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt?: Date;
+
+    @ManyToOne(() => Block, (block) => block.sessions, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'blockId' })
     block: Block;
 
-    @OneToMany(() => Exercise, (exercise) => exercise.session)
+    @OneToMany(() => Exercise, (exercise) => exercise.session, { cascade: true })
     exercises: Exercise[];
 }

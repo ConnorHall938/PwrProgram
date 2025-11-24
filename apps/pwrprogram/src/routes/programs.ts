@@ -1,72 +1,103 @@
-
 import { CreateProgramDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
+import { DataSource } from 'typeorm';
 
 import { Program } from '../entity';
-import { UnauthorizedException } from '../errors/unauthorizederror';
 import { toProgramDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
-import { get_user_from_request } from '../session-store';
+import { asyncHandler, NotFoundError } from '../middleware/errorHandler';
+import { logger } from '../utils/logger';
 
-export function programsRouter(dataSource): Express.Router {
+export function programsRouter(dataSource: DataSource): Express.Router {
     const router = Express.Router();
     const progRepo = dataSource.getRepository(Program);
 
-    //Attach userID from cookie
-    router.use(function (req, res, next) {
-        try {
-            let user_id = get_user_from_request(req);
-            req.user_id = user_id;
-            next();
-        }
-        catch (err) {
-            if (err instanceof UnauthorizedException) {
-                res.status(err.code).json({ message: "Unauthorized. Please log in." });
-            }
-            else
-                throw err;
-        }
-    });
+    /**
+     * GET /programs
+     * Get all programs for the authenticated user with pagination
+     */
+    router.get('/', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+        const userId = req.session?.userId;
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+        const skip = (page - 1) * limit;
 
-    router.get('/:id', async (req, res) => {
+        const [programs, total] = await progRepo.findAndCount({
+            where: { userId },
+            skip,
+            take: limit,
+            order: { createdAt: 'DESC' },
+        });
+
+        res.status(200).json({
+            data: programs.map(toProgramDTO),
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        });
+    }));
+
+    /**
+     * GET /programs/:id
+     * Get a specific program (must belong to user)
+     */
+    router.get('/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+        const userId = req.session?.userId;
         const program = await progRepo.findOne({
-            where: { id: req.params.id, userId: req.user_id }
+            where: { id: req.params.id, userId }
         });
+
         if (!program) {
-            res.status(404).send(null);
-            return;
+            throw new NotFoundError('Program not found');
         }
-        // Convert to DTO
-        const dto = toProgramDTO(program);
-        res.status(200).json(dto);
-    });
 
-    router.get('/', async (req, res) => {
-        const programList = await progRepo.find({
-            where: { userId: req.user_id }
-        });
-        res.status(200).json(programList.map(toProgramDTO));
-    });
+        res.status(200).json(toProgramDTO(program));
+    }));
 
-    router.post('/', validateRequest(CreateProgramDTO), async (req, res) => {
+    /**
+     * POST /programs
+     * Create a new program
+     */
+    router.post('/', validateRequest(CreateProgramDTO), asyncHandler(async (req: Express.Request, res: Express.Response) => {
+        const userId = req.session?.userId!;
+
         const program = progRepo.create({
             name: req.body.name,
             description: req.body.description,
-            userId: req.user_id,
+            userId,
             coachId: req.body.coachId
         });
-        try {
-            await progRepo.save(program);
-            res.status(201).json(toProgramDTO(program));
-        } catch (error) {
-            const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
-            if (code === '23505') {
-                return res.status(400).json({ message: "Duplicate email entered" });
-            }
-            console.error(error);
-            res.status(500).json({ message: "Internal server error" });
+
+        await progRepo.save(program);
+
+        logger.info('Program created', { programId: program.id, userId });
+
+        res.status(201).json(toProgramDTO(program));
+    }));
+
+    /**
+     * DELETE /programs/:id
+     * Soft delete a program (must belong to user)
+     */
+    router.delete('/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+        const userId = req.session?.userId;
+        const program = await progRepo.findOne({
+            where: { id: req.params.id, userId }
+        });
+
+        if (!program) {
+            throw new NotFoundError('Program not found');
         }
-    });
+
+        await progRepo.softRemove(program);
+
+        logger.info('Program deleted', { programId: program.id, userId });
+
+        res.status(204).send();
+    }));
 
     return router;
 }

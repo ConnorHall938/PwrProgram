@@ -1,9 +1,196 @@
 // Path objects separated for modular OpenAPI assembly
 export const paths = {
+    // ==================== Authentication Routes ====================
+    '/api/auth/register': {
+        post: {
+            tags: ['Authentication'],
+            summary: 'Register a new user',
+            description: 'Creates a new user account with hashed password and automatically logs them in',
+            requestBody: {
+                required: true,
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                            required: ['email', 'password', 'firstName'],
+                            properties: {
+                                email: { type: 'string', format: 'email' },
+                                password: { type: 'string', minLength: 8 },
+                                firstName: { type: 'string' },
+                                lastName: { type: 'string' }
+                            }
+                        },
+                        examples: {
+                            example: {
+                                value: {
+                                    email: 'john@example.com',
+                                    password: 'securepass123',
+                                    firstName: 'John',
+                                    lastName: 'Doe'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            responses: {
+                201: {
+                    description: 'User registered successfully',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    message: { type: 'string' },
+                                    user: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'string', format: 'uuid' },
+                                            email: { type: 'string' },
+                                            firstName: { type: 'string' },
+                                            lastName: { type: 'string' },
+                                            isEmailVerified: { type: 'boolean' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                400: {
+                    description: 'Validation error or email already exists',
+                    content: {
+                        'application/json': {
+                            schema: { $ref: '#/components/schemas/Error' }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    '/api/auth/login': {
+        post: {
+            tags: ['Authentication'],
+            summary: 'Login with email and password',
+            description: 'Authenticates user and creates a session cookie',
+            requestBody: {
+                required: true,
+                content: {
+                    'application/json': {
+                        schema: {
+                            type: 'object',
+                            required: ['email', 'password'],
+                            properties: {
+                                email: { type: 'string', format: 'email' },
+                                password: { type: 'string' }
+                            }
+                        },
+                        examples: {
+                            example: {
+                                value: {
+                                    email: 'john@example.com',
+                                    password: 'securepass123'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            responses: {
+                200: {
+                    description: 'Login successful',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    message: { type: 'string' },
+                                    user: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'string', format: 'uuid' },
+                                            email: { type: 'string' },
+                                            firstName: { type: 'string' },
+                                            lastName: { type: 'string' },
+                                            isEmailVerified: { type: 'boolean' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                401: {
+                    description: 'Invalid credentials',
+                    content: {
+                        'application/json': {
+                            schema: { $ref: '#/components/schemas/Error' }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    '/api/auth/logout': {
+        post: {
+            tags: ['Authentication'],
+            summary: 'Logout current user',
+            description: 'Destroys the session and clears the session cookie',
+            responses: {
+                200: {
+                    description: 'Logout successful',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    message: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    '/api/auth/me': {
+        get: {
+            tags: ['Authentication'],
+            summary: 'Get current user',
+            description: 'Returns the currently authenticated user information',
+            security: [{ cookieAuth: [] }],
+            responses: {
+                200: {
+                    description: 'Current user',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    user: { $ref: '#/components/schemas/UserResponseDTO' }
+                                }
+                            }
+                        }
+                    }
+                },
+                401: {
+                    description: 'Not authenticated',
+                    content: {
+                        'application/json': {
+                            schema: { $ref: '#/components/schemas/Error' }
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    // ==================== Users Routes ====================
     '/api/users/{id}': {
         get: {
             tags: ['Users'],
             summary: 'Get user by id',
+            security: [{ cookieAuth: [] }],
             parameters: [
                 {
                     name: 'id',
@@ -17,76 +204,136 @@ export const paths = {
                     description: 'User found',
                     content: {
                         'application/json': {
-                            schema: { $ref: '#/components/schemas/UserResponseDTO' },
-                            examples: {
-                                example: {
-                                    value: {
-                                        id: 'b3d5e6f4-1234-4c2a-9f1d-111111111111',
-                                        firstName: 'Alex',
-                                        lastName: 'Smith',
-                                        email: 'alex@example.com',
-                                        _links: {
-                                            self: '/api/users/b3d5e6f4-1234-4c2a-9f1d-111111111111',
-                                            programs: '/api/users/b3d5e6f4-1234-4c2a-9f1d-111111111111/programs'
-                                        }
-                                    }
+                            schema: { $ref: '#/components/schemas/UserResponseDTO' }
+                        }
+                    }
+                },
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+                404: { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+            }
+        },
+        patch: {
+            tags: ['Users'],
+            summary: 'Update user profile',
+            description: 'Update own profile (firstName, lastName, email, password). Users can only update their own profile.',
+            security: [{ cookieAuth: [] }],
+            parameters: [
+                {
+                    name: 'id',
+                    in: 'path',
+                    required: true,
+                    schema: { type: 'string', format: 'uuid' }
+                }
+            ],
+            requestBody: {
+                required: true,
+                content: {
+                    'application/json': {
+                        schema: { $ref: '#/components/schemas/UpdateUserDTO' },
+                        examples: {
+                            updateProfile: {
+                                summary: 'Update name',
+                                value: {
+                                    firstName: 'Jane',
+                                    lastName: 'Smith'
+                                }
+                            },
+                            changePassword: {
+                                summary: 'Change password',
+                                value: {
+                                    currentPassword: 'oldpass123',
+                                    newPassword: 'newpass456'
                                 }
                             }
                         }
                     }
-                },
-                404: {
-                    description: 'Not found',
+                }
+            },
+            responses: {
+                200: {
+                    description: 'User updated',
                     content: {
                         'application/json': {
-                            schema: { $ref: '#/components/schemas/Error' },
-                            examples: { notFound: { value: { message: 'User not found' } } }
+                            schema: { $ref: '#/components/schemas/UserResponseDTO' }
                         }
                     }
+                },
+                400: { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+                403: { description: 'Forbidden - can only update own profile', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+            }
+        },
+        delete: {
+            tags: ['Users'],
+            summary: 'Delete user account (soft delete)',
+            description: 'Soft deletes the user account. Users can only delete their own account.',
+            security: [{ cookieAuth: [] }],
+            parameters: [
+                {
+                    name: 'id',
+                    in: 'path',
+                    required: true,
+                    schema: { type: 'string', format: 'uuid' }
                 }
+            ],
+            responses: {
+                204: { description: 'User deleted' },
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+                403: { description: 'Forbidden - can only delete own account', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+                404: { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
             }
         }
     },
     '/api/users': {
         get: {
             tags: ['Users'],
-            summary: 'List users',
+            summary: 'List users with pagination',
+            security: [{ cookieAuth: [] }],
+            parameters: [
+                {
+                    name: 'page',
+                    in: 'query',
+                    schema: { type: 'integer', default: 1, minimum: 1 },
+                    description: 'Page number'
+                },
+                {
+                    name: 'limit',
+                    in: 'query',
+                    schema: { type: 'integer', default: 20, minimum: 1, maximum: 100 },
+                    description: 'Items per page (max 100)'
+                }
+            ],
             responses: {
                 200: {
-                    description: 'List of users',
+                    description: 'List of users with pagination',
                     content: {
                         'application/json': {
-                            schema: { type: 'array', items: { $ref: '#/components/schemas/UserResponseDTO' } },
-                            examples: {
-                                example: {
-                                    value: [
-                                        { id: 'b3d5e6f4-1234-4c2a-9f1d-111111111111', firstName: 'Alex', email: 'alex@example.com' }
-                                    ]
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    data: {
+                                        type: 'array',
+                                        items: { $ref: '#/components/schemas/UserResponseDTO' }
+                                    },
+                                    pagination: { $ref: '#/components/schemas/PaginationResponse' }
                                 }
                             }
                         }
                     }
-                }
+                },
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
             }
         },
         post: {
             tags: ['Users'],
-            summary: 'Create user',
+            summary: 'Create user (admin)',
+            description: 'Create a new user. Note: Regular users should use /auth/register',
+            security: [{ cookieAuth: [] }],
             requestBody: {
                 required: true,
                 content: {
                     'application/json': {
-                        schema: { $ref: '#/components/schemas/CreateUserDTO' },
-                        examples: {
-                            example: {
-                                value: {
-                                    firstName: 'Alex',
-                                    lastName: 'Smith',
-                                    email: 'alex@example.com',
-                                    password: 'Secret123'
-                                }
-                            }
-                        }
+                        schema: { $ref: '#/components/schemas/CreateUserDTO' }
                     }
                 }
             },
@@ -95,187 +342,125 @@ export const paths = {
                     description: 'Created',
                     content: {
                         'application/json': {
-                            schema: { $ref: '#/components/schemas/UserResponseDTO' },
-                            examples: {
-                                created: {
-                                    value: {
-                                        id: 'b3d5e6f4-1234-4c2a-9f1d-111111111111',
-                                        firstName: 'Alex',
-                                        email: 'alex@example.com'
-                                    }
+                            schema: { $ref: '#/components/schemas/UserResponseDTO' }
+                        }
+                    }
+                },
+                400: { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+            }
+        }
+    },
+
+    // ==================== Programs Routes ====================
+    '/api/programs': {
+        get: {
+            tags: ['Programs'],
+            summary: 'List user programs with pagination',
+            security: [{ cookieAuth: [] }],
+            parameters: [
+                {
+                    name: 'page',
+                    in: 'query',
+                    schema: { type: 'integer', default: 1, minimum: 1 }
+                },
+                {
+                    name: 'limit',
+                    in: 'query',
+                    schema: { type: 'integer', default: 20, minimum: 1, maximum: 100 }
+                }
+            ],
+            responses: {
+                200: {
+                    description: 'List of programs',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    data: {
+                                        type: 'array',
+                                        items: { $ref: '#/components/schemas/ProgramResponseDTO' }
+                                    },
+                                    pagination: { $ref: '#/components/schemas/PaginationResponse' }
                                 }
                             }
                         }
                     }
                 },
-                400: {
-                    description: 'Validation / duplicate error',
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
+            }
+        },
+        post: {
+            tags: ['Programs'],
+            summary: 'Create program',
+            security: [{ cookieAuth: [] }],
+            requestBody: {
+                required: true,
+                content: {
+                    'application/json': {
+                        schema: { $ref: '#/components/schemas/CreateProgramDTO' }
+                    }
+                }
+            },
+            responses: {
+                201: {
+                    description: 'Created',
                     content: {
                         'application/json': {
-                            schema: { $ref: '#/components/schemas/Error' },
-                            examples: {
-                                duplicate: { value: { message: 'Email already exists' } },
-                                validation: { value: { message: 'Validation failed' } }
-                            }
+                            schema: { $ref: '#/components/schemas/ProgramResponseDTO' }
                         }
                     }
                 },
-                500: {
-                    description: 'Server error',
-                    content: {
-                        'application/json': {
-                            schema: { $ref: '#/components/schemas/Error' },
-                            examples: {
-                                serverError: { value: { message: 'Internal server error' } }
-                            }
-                        }
-                    }
-                }
+                400: { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
             }
         }
     },
-    // Programs
     '/api/programs/{id}': {
         get: {
             tags: ['Programs'],
             summary: 'Get program by id',
+            security: [{ cookieAuth: [] }],
             parameters: [
-                { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }
+                {
+                    name: 'id',
+                    in: 'path',
+                    required: true,
+                    schema: { type: 'string', format: 'uuid' }
+                }
             ],
             responses: {
                 200: {
                     description: 'Program found',
                     content: {
                         'application/json': {
-                            schema: { type: 'object' },
-                            examples: {
-                                example: {
-                                    value: {
-                                        id: '11111111-1111-1111-1111-111111111111',
-                                        userId: '22222222-2222-2222-2222-222222222222',
-                                        name: 'Strength Focus',
-                                        description: '12 week strength block'
-                                    }
-                                }
-                            }
+                            schema: { $ref: '#/components/schemas/ProgramResponseDTO' }
                         }
                     }
                 },
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
                 404: { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
             }
-        }
-    },
-    '/api/programs': {
-        get: {
+        },
+        delete: {
             tags: ['Programs'],
-            summary: 'List programs',
-            responses: {
-                200: {
-                    description: 'List of programs',
-                    content: {
-                        'application/json': {
-                            schema: { type: 'array', items: { type: 'object' } },
-                            examples: { example: { value: [{ id: '111', name: 'Strength Focus' }] } }
-                        }
-                    }
+            summary: 'Delete program (soft delete)',
+            description: 'Soft deletes a program. Users can only delete their own programs.',
+            security: [{ cookieAuth: [] }],
+            parameters: [
+                {
+                    name: 'id',
+                    in: 'path',
+                    required: true,
+                    schema: { type: 'string', format: 'uuid' }
                 }
-            }
-        },
-        post: {
-            tags: ['Programs'],
-            summary: 'Create program',
-            requestBody: {
-                required: true,
-                content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateProgramDTO' } } }
-            },
+            ],
             responses: {
-                201: { description: 'Created', content: { 'application/json': { schema: { type: 'object' } } } },
-                400: { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
-            }
-        }
-    },
-    // Cycles (note: current routing structure duplicates /cycles segment for create/list)
-    '/api/cycles/{id}': {
-        get: {
-            tags: ['Cycles'],
-            summary: 'Get cycle by id',
-            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
-            responses: {
-                200: { description: 'Cycle found', content: { 'application/json': { schema: { type: 'object' } } } },
-                404: { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
-            }
-        },
-        patch: {
-            tags: ['Cycles'],
-            summary: 'Update cycle',
-            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
-            requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateCycleDTO' } } } },
-            responses: {
-                200: { description: 'Updated', content: { 'application/json': { schema: { type: 'object' } } } },
+                204: { description: 'Program deleted' },
+                401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
                 404: { description: 'Not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
             }
         }
-    },
-    '/api/programs/{programId}/cycles': {
-        get: {
-            tags: ['Cycles'],
-            summary: 'List cycles for program',
-            parameters: [{ name: 'programId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
-            responses: { 200: { description: 'List', content: { 'application/json': { schema: { type: 'array', items: { type: 'object' } } } } } }
-        },
-        post: {
-            tags: ['Cycles'],
-            summary: 'Create cycle (under program)',
-            parameters: [{ name: 'programId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
-            requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateCycleDTO' } } } },
-            responses: { 201: { description: 'Created', content: { 'application/json': { schema: { type: 'object' } } } } }
-        }
-    },
-    // Blocks
-    '/api/blocks/{id}': {
-        get: {
-            tags: ['Blocks'],
-            summary: 'Get block by id',
-            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
-            responses: { 200: { description: 'Block found', content: { 'application/json': { schema: { type: 'object' } } } }, 404: { description: 'Not found' } }
-        },
-        patch: {
-            tags: ['Blocks'],
-            summary: 'Update block',
-            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
-            requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateBlockDTO' } } } },
-            responses: { 200: { description: 'Updated', content: { 'application/json': { schema: { type: 'object' } } } }, 404: { description: 'Not found' } }
-        }
-    },
-    '/api/blocks/{cycleId}/blocks': {
-        get: { tags: ['Blocks'], summary: 'List blocks for cycle', parameters: [{ name: 'cycleId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { 200: { description: 'List', content: { 'application/json': { schema: { type: 'array', items: { type: 'object' } } } } } } },
-        post: { tags: ['Blocks'], summary: 'Create block (under cycle)', parameters: [{ name: 'cycleId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateBlockDTO' } } } }, responses: { 201: { description: 'Created', content: { 'application/json': { schema: { type: 'object' } } } } } }
-    },
-    // Sessions
-    '/api/sessions/{id}': {
-        get: { tags: ['Sessions'], summary: 'Get session by id', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { 200: { description: 'Found', content: { 'application/json': { schema: { type: 'object' } } } }, 404: { description: 'Not found' } } },
-        patch: { tags: ['Sessions'], summary: 'Update session', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateSessionDTO' } } } }, responses: { 200: { description: 'Updated' }, 404: { description: 'Not found' } } }
-    },
-    '/api/blocks/{blockId}/sessions': {
-        get: { tags: ['Sessions'], summary: 'List sessions for block', parameters: [{ name: 'blockId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { 200: { description: 'List', content: { 'application/json': { schema: { type: 'array', items: { type: 'object' } } } } } } },
-        post: { tags: ['Sessions'], summary: 'Create session (under block)', parameters: [{ name: 'blockId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateSessionDTO' } } } }, responses: { 201: { description: 'Created' } } }
-    },
-    // Exercises
-    '/api/exercises/{id}': {
-        get: { tags: ['Exercises'], summary: 'Get exercise by id', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { 200: { description: 'Found' }, 404: { description: 'Not found' } } },
-        patch: { tags: ['Exercises'], summary: 'Update exercise', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateExerciseDTO' } } } }, responses: { 200: { description: 'Updated' }, 404: { description: 'Not found' } } }
-    },
-    '/api/sessions/{sessionId}/exercises': {
-        get: { tags: ['Exercises'], summary: 'List exercises for session', parameters: [{ name: 'sessionId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { 200: { description: 'List', content: { 'application/json': { schema: { type: 'array', items: { type: 'object' } } } } } } },
-        post: { tags: ['Exercises'], summary: 'Create exercise (under session)', parameters: [{ name: 'sessionId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateExerciseDTO' } } } }, responses: { 201: { description: 'Created' } } }
-    },
-    // Sets
-    '/api/sets/{id}': {
-        get: { tags: ['Sets'], summary: 'Get set by id', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { 200: { description: 'Found' }, 404: { description: 'Not found' } } },
-        patch: { tags: ['Sets'], summary: 'Update set', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateSetDTO' } } } }, responses: { 200: { description: 'Updated' }, 404: { description: 'Not found' } } }
-    },
-    '/api/exercises/{exerciseId}/sets': {
-        get: { tags: ['Sets'], summary: 'List sets for exercise', parameters: [{ name: 'exerciseId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { 200: { description: 'List', content: { 'application/json': { schema: { type: 'array', items: { type: 'object' } } } } } } },
-        post: { tags: ['Sets'], summary: 'Create set (under exercise)', parameters: [{ name: 'exerciseId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateSetDTO' } } } }, responses: { 201: { description: 'Created' } } }
     }
 };

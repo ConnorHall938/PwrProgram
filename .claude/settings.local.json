@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 10 pnpm start:dev:*)",
+      "Bash(curl:*)",
+      "Bash(pnpm --filter @pwrprogram/api test user)",
+      "Bash(pnpm --filter @pwrprogram/api test user program)",
+      "Bash(pnpm --filter @pwrprogram/api test:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

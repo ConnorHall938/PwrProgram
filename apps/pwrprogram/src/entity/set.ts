@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Index } from "typeorm";
 
 import { Exercise } from "./exercise";
 
@@ -7,12 +7,9 @@ export class Set {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index()
     @Column()
     exerciseId: string;
-
-    @ManyToOne(() => Exercise, (exercise) => exercise.sets)
-    @JoinColumn({ name: 'exerciseId' })  // explicitly link FK column
-    exercise: Exercise;
 
     @Column({ nullable: true })
     targetReps?: number;
@@ -46,4 +43,17 @@ export class Set {
 
     @Column({ nullable: true })
     notes?: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt?: Date;
+
+    @ManyToOne(() => Exercise, (exercise) => exercise.sets, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'exerciseId' })
+    exercise: Exercise;
 }

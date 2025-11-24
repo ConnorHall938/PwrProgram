@@ -28,6 +28,42 @@ export class CreateUserDTO {
     password: string;
 }
 
+export class UpdateUserDTO {
+    @Expose()
+    @IsOptional()
+    @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+    @IsString()
+    firstName?: string;
+
+    @Expose()
+    @IsOptional()
+    @Transform(({ value }) => {
+        if (typeof value !== 'string') return value;
+        const t = value.trim();
+        return t === '' ? undefined : t;
+    })
+    @IsString()
+    lastName?: string;
+
+    @Expose()
+    @IsOptional()
+    @Transform(({ value }) => typeof value === 'string' ? value.trim() : value)
+    @IsEmail()
+    email?: string;
+
+    @Expose()
+    @IsOptional()
+    @IsString()
+    @MinLength(8)
+    currentPassword?: string;
+
+    @Expose()
+    @IsOptional()
+    @IsString()
+    @MinLength(8)
+    newPassword?: string;
+}
+
 export class UserResponseDTO {
     @Expose()
     @IsString()

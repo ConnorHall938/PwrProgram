@@ -7,44 +7,48 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug Jest Tests",
-            "program": "${workspaceFolder}/apps/pwrprogram/node_modules/jest/bin/jest.js",
-            "args": [
-                "--runInBand",
-                "--config",
-                "${workspaceFolder}/apps/pwrprogram/jest.config.ts"
+            "name": "Start API Server (Recommended)",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "--filter",
+                "@pwrprogram/api",
+                "dev"
             ],
+            "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
-            "cwd": "${workspaceFolder}/apps/pwrprogram",
-            "env": {
-                "NODE_ENV": "test"
-            }
+            "skipFiles": ["<node_internals>/**"]
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "runtimeExecutable": "${workspaceRoot}/apps/pwrprogram/node_modules/.bin/ts-node",
-            "runtimeArgs": [],
-            "program": "${workspaceFolder}\\apps\\pwrprogram\\src\\index.ts"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch Program with Nodemon",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "runtimeExecutable": "${workspaceRoot}/apps/pwrprogram/node_modules/.bin/nodemon",
+            "name": "Debug API Server",
+            "runtimeExecutable": "pnpm",
             "runtimeArgs": [
-                "--exec",
-                "${workspaceRoot}/apps/pwrprogram/node_modules/.bin/ts-node"
+                "--filter",
+                "@pwrprogram/api",
+                "start:dev"
             ],
-            "program": "${workspaceFolder}\\apps\\pwrprogram\\src\\index.ts"
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": ["<node_internals>/**"],
+            "attachSimplePort": 9229
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Tests",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": [
+                "--filter",
+                "@pwrprogram/api",
+                "test"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": ["<node_internals>/**"]
         }
     ]
 }

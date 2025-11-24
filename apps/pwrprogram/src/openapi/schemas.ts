@@ -22,12 +22,22 @@ type JSONSchema = {
 void Object.values(SharedDTOs);
 
 const generatedRaw = validationMetadatasToSchemas();
-// Just use exactly what class-validator-jsonschema produces, plus shared Error schema.
+// Just use exactly what class-validator-jsonschema produces, plus shared Error schema and pagination.
 export const schemas: Record<string, JSONSchema> = {
     ...generatedRaw,
     Error: {
         type: 'object',
         required: ['message'],
         properties: { message: { type: 'string' } }
+    },
+    PaginationResponse: {
+        type: 'object',
+        required: ['page', 'limit', 'total', 'totalPages'],
+        properties: {
+            page: { type: 'integer', description: 'Current page number' },
+            limit: { type: 'integer', description: 'Items per page' },
+            total: { type: 'integer', description: 'Total number of items' },
+            totalPages: { type: 'integer', description: 'Total number of pages' }
+        }
     }
 };

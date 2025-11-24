@@ -6,12 +6,22 @@ export const openApiSpec = {
     openapi: '3.0.3',
     info: {
         title: 'PwrProgram API',
-        version: '0.1.0',
-        description: 'API documentation for PwrProgram'
+        version: '1.0.0',
+        description: 'Production-ready API for fitness program management with secure authentication'
     },
     servers: [
         { url: 'http://localhost:3000', description: 'Local dev' }
     ],
     paths,
-    components: { schemas }
+    components: {
+        schemas,
+        securitySchemes: {
+            cookieAuth: {
+                type: 'apiKey',
+                in: 'cookie',
+                name: 'connect.sid',
+                description: 'Session cookie authentication. Login via /api/auth/login to obtain session cookie.'
+            }
+        }
+    }
 };

@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
+import { Entity, Column, ManyToOne, OneToMany, PrimaryGeneratedColumn, JoinColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Index } from "typeorm";
 
 import { Session } from "./session";
 import { Set } from "./set";
@@ -8,6 +8,7 @@ export class Exercise {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index()
     @Column()
     sessionId: string;
 
@@ -23,10 +24,19 @@ export class Exercise {
     @Column({ nullable: true })
     tutorial_url?: string;
 
-    @ManyToOne(() => Session, (session) => session.exercises)
-    @JoinColumn({ name: 'sessionId' })  // explicitly link FK column
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt?: Date;
+
+    @ManyToOne(() => Session, (session) => session.exercises, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'sessionId' })
     session: Session;
 
-    @OneToMany(() => Set, (set) => set.exercise)
+    @OneToMany(() => Set, (set) => set.exercise, { cascade: true })
     sets: Set[];
 }
