@@ -1,6 +1,6 @@
 # PwrProgram
 
-A comprehensive fitness program management API built with TypeScript, Node.js, and PostgreSQL. Manage workout programs, cycles, blocks, sessions, exercises, and sets with a hierarchical structure designed for coaches and athletes.
+A comprehensive fitness program management application built with TypeScript, React, Node.js, and PostgreSQL. Manage workout programs, cycles, blocks, sessions, exercises, and sets with a hierarchical structure designed for coaches and athletes.
 
 ## 🚀 Features
 
@@ -10,6 +10,14 @@ A comprehensive fitness program management API built with TypeScript, Node.js, a
 - **CRUD Operations**: Full Create, Read, Update, Delete (soft delete) support for all resources
 - **Pagination**: Efficient data retrieval with configurable page sizes
 - **HATEOAS**: Discoverable REST API with hypermedia links
+
+### Frontend (React + Vite)
+- **Modern Stack**: React 19, TypeScript, Vite
+- **Routing**: React Router v7 with protected routes
+- **Authentication**: Context-based auth with session management
+- **Component Library**: Reusable UI components (Button, Input, Card)
+- **CSS Modules**: Scoped styling for maintainability
+- **API Integration**: Type-safe API client with error handling
 
 ### Security
 - ✅ **Password Hashing**: Bcrypt with configurable rounds
@@ -142,26 +150,32 @@ All configuration is done through environment variables. Copy `.env.example` to 
 
 ### Development
 ```bash
-# Start dev server with hot reload
-pnpm --filter @pwrprogram/api dev
+# Start API server with hot reload
+pnpm dev:api
 
-# Run tests
-pnpm --filter @pwrprogram/api test
+# Start frontend dev server
+pnpm dev:web
+
+# Run API tests
+pnpm test:api
 
 # Run tests with coverage
-pnpm --filter @pwrprogram/api test:coverage
+pnpm test:api:coverage
 
-# Lint code
-pnpm --filter @pwrprogram/api lint
+# Lint frontend code
+pnpm lint:web
 ```
 
 ### Production
 ```bash
-# Build the application
+# Build the API
 pnpm --filter @pwrprogram/api build
 
-# Start production server
-pnpm --filter @pwrprogram/api start
+# Build the frontend
+pnpm build:web
+
+# Start production API server
+pnpm start:api
 ```
 
 ### Docker
@@ -430,18 +444,34 @@ docker run -d \
 ```
 PwrProgram/
 ├── apps/
-│   └── pwrprogram/              # Main API application
+│   ├── pwrprogram/              # Main API application
+│   │   ├── src/
+│   │   │   ├── entity/          # TypeORM entities
+│   │   │   ├── routes/          # Express route handlers
+│   │   │   ├── middleware/      # Custom middleware
+│   │   │   ├── mappers/         # Entity to DTO mappers
+│   │   │   ├── utils/           # Utility functions
+│   │   │   ├── openapi/         # OpenAPI spec
+│   │   │   ├── testing/         # Test files
+│   │   │   ├── data-source.ts   # TypeORM configuration
+│   │   │   └── index.ts         # Application entry point
+│   │   ├── .env                 # Environment variables (gitignored)
+│   │   └── package.json
+│   └── web/                     # React frontend application
 │       ├── src/
-│       │   ├── entity/          # TypeORM entities
-│       │   ├── routes/          # Express route handlers
-│       │   ├── middleware/      # Custom middleware
-│       │   ├── mappers/         # Entity to DTO mappers
-│       │   ├── utils/           # Utility functions
-│       │   ├── openapi/         # OpenAPI spec
-│       │   ├── testing/         # Test files
-│       │   ├── data-source.ts   # TypeORM configuration
-│       │   └── index.ts         # Application entry point
-│       ├── .env                 # Environment variables (gitignored)
+│       │   ├── components/      # React components
+│       │   │   ├── auth/        # Auth-related components
+│       │   │   ├── layout/      # Layout components
+│       │   │   ├── programs/    # Program management
+│       │   │   └── ui/          # Reusable UI components
+│       │   ├── context/         # React contexts (Auth)
+│       │   ├── hooks/           # Custom React hooks
+│       │   ├── lib/             # Utilities and API client
+│       │   ├── pages/           # Page components
+│       │   ├── types/           # TypeScript types
+│       │   ├── App.tsx          # App with routing
+│       │   └── main.tsx         # Entry point
+│       ├── vite.config.ts       # Vite configuration
 │       └── package.json
 ├── packages/
 │   └── shared/                  # Shared DTOs and types
@@ -546,7 +576,5 @@ PwrProgram/
 - [Express.js](https://expressjs.com/)
 - [PostgreSQL](https://www.postgresql.org/)
 - [TypeScript](https://www.typescriptlang.org/)
-
----
-
-**Note**: This is a backend API. Frontend coming soon!
+- [React](https://react.dev/)
+- [Vite](https://vitejs.dev/)

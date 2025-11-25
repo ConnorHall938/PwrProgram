@@ -9,14 +9,17 @@
     "eslint-plugin-import": "^2.29.0"
   },
   "scripts": {
-    "dev:api": "pnpm --filter pwrprogram devstart",
-    "start:api": "pnpm --filter pwrprogram start",
+    "dev:api": "pnpm --filter @pwrprogram/api dev",
+    "dev:web": "pnpm --filter @pwrprogram/web dev",
+    "start:api": "pnpm --filter @pwrprogram/api start",
+    "build:web": "pnpm --filter @pwrprogram/web build",
     "test": "pnpm -r --workspace-concurrency=1 test",
     "test:watch": "pnpm -r test:watch",
     "test:coverage": "pnpm -r --workspace-concurrency=1 test:coverage",
-    "test:api": "pnpm --filter pwrprogram test",
-    "test:api:watch": "pnpm --filter pwrprogram test:watch",
-    "test:api:coverage": "pnpm --filter pwrprogram test:coverage"
+    "test:api": "pnpm --filter @pwrprogram/api test",
+    "test:api:watch": "pnpm --filter @pwrprogram/api test:watch",
+    "test:api:coverage": "pnpm --filter @pwrprogram/api test:coverage",
+    "lint:web": "pnpm --filter @pwrprogram/web lint"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
