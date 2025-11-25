@@ -1,7 +1,9 @@
+import { CreateUserDTO } from '@pwrprogram/shared';
 import * as Express from 'express';
 import { DataSource } from 'typeorm';
 import { User } from '../entity/User';
 import { asyncHandler, ValidationError, UnauthorizedError } from '../middleware/errorHandler';
+import { validateRequest } from '../middleware/validation.middleware';
 import { logger } from '../utils/logger';
 
 const router = Express.Router();
@@ -13,22 +15,13 @@ export default function baseRouter(dataSource: DataSource): Express.Router {
      * POST /auth/register
      * Register a new user
      */
-    router.post('/auth/register', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+    router.post('/auth/register', validateRequest(CreateUserDTO), asyncHandler(async (req: Express.Request, res: Express.Response) => {
         const { email, password, firstName, lastName } = req.body;
-
-        // Validation
-        if (!email || !password || !firstName) {
-            throw new ValidationError('Email, password, and first name are required');
-        }
-
-        if (password.length < 8) {
-            throw new ValidationError('Password must be at least 8 characters long');
-        }
 
         // Check if user already exists
         const existingUser = await userRepository.findOne({ where: { email: email.toLowerCase() } });
         if (existingUser) {
-            throw new ValidationError('A user with this email already exists');
+            throw new ValidationError('Email already exists');
         }
 
         // Create new user
@@ -51,15 +44,20 @@ export default function baseRouter(dataSource: DataSource): Express.Router {
 
         logger.info('User registered', { userId: user.id, email: user.email });
 
+        const userResponse: any = {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            isEmailVerified: user.isEmailVerified,
+        };
+
+        if (user.lastName) {
+            userResponse.lastName = user.lastName;
+        }
+
         res.status(201).json({
             message: 'User registered successfully',
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                isEmailVerified: user.isEmailVerified,
-            },
+            user: userResponse,
         });
     }));
 
@@ -97,15 +95,20 @@ export default function baseRouter(dataSource: DataSource): Express.Router {
 
         logger.info('User logged in', { userId: user.id, email: user.email });
 
+        const userResponse: any = {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            isEmailVerified: user.isEmailVerified,
+        };
+
+        if (user.lastName) {
+            userResponse.lastName = user.lastName;
+        }
+
         res.status(200).json({
             message: 'Login successful',
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                isEmailVerified: user.isEmailVerified,
-            },
+            user: userResponse,
         });
     }));
 
@@ -148,15 +151,20 @@ export default function baseRouter(dataSource: DataSource): Express.Router {
             throw new UnauthorizedError('User not found');
         }
 
+        const userResponse: any = {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            isEmailVerified: user.isEmailVerified,
+            createdAt: user.createdAt,
+        };
+
+        if (user.lastName) {
+            userResponse.lastName = user.lastName;
+        }
+
         res.status(200).json({
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                isEmailVerified: user.isEmailVerified,
-                createdAt: user.createdAt,
-            },
+            user: userResponse,
         });
     }));
 

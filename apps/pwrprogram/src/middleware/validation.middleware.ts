@@ -12,7 +12,7 @@ export const validateRequest = <T extends object>(dtoClass: ClassType<T>) => {
         if (errors.length > 0) {
             const formattedErrors = formatValidationErrors(errors);
             return res.status(400).json({
-                message: 'Validation failed',
+                error: 'Validation failed',
                 errors: formattedErrors
             });
         }

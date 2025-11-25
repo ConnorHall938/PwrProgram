@@ -16,7 +16,7 @@ export function programsRouter(dataSource: DataSource): Express.Router {
      * GET /programs
      * Get all programs for the authenticated user with pagination
      */
-    router.get('/', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+    router.get('/programs', asyncHandler(async (req: Express.Request, res: Express.Response) => {
         const userId = req.session?.userId;
         const page = parseInt(req.query.page as string) || 1;
         const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
@@ -44,7 +44,7 @@ export function programsRouter(dataSource: DataSource): Express.Router {
      * GET /programs/:id
      * Get a specific program (must belong to user)
      */
-    router.get('/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+    router.get('/programs/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
         const userId = req.session?.userId;
         const program = await progRepo.findOne({
             where: { id: req.params.id, userId }
@@ -61,7 +61,7 @@ export function programsRouter(dataSource: DataSource): Express.Router {
      * POST /programs
      * Create a new program
      */
-    router.post('/', validateRequest(CreateProgramDTO), asyncHandler(async (req: Express.Request, res: Express.Response) => {
+    router.post('/programs', validateRequest(CreateProgramDTO), asyncHandler(async (req: Express.Request, res: Express.Response) => {
         const userId = req.session?.userId!;
 
         const program = progRepo.create({
@@ -82,7 +82,7 @@ export function programsRouter(dataSource: DataSource): Express.Router {
      * DELETE /programs/:id
      * Soft delete a program (must belong to user)
      */
-    router.delete('/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+    router.delete('/programs/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
         const userId = req.session?.userId;
         const program = await progRepo.findOne({
             where: { id: req.params.id, userId }

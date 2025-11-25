@@ -55,7 +55,7 @@ describe('Program API', () => {
                 .authenticatedPost('/api/programs', { description: 'No name' })
                 .expect(400);
 
-            expect(response.body.message).toBe('Validation failed');
+            expect(response.body.error).toBe('Validation failed');
             expect(response.body.errors).toHaveProperty('name');
         });
 

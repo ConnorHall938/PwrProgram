@@ -5,7 +5,7 @@ import { DataSource } from 'typeorm';
 import { User } from "../entity";
 import { toUserDTO } from '../mappers';
 import { validateRequest } from '../middleware/validation.middleware';
-import { asyncHandler, NotFoundError, ValidationError, ForbiddenError } from '../middleware/errorHandler';
+import { asyncHandler, NotFoundError, ValidationError, ForbiddenError, UnauthorizedError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 export function usersRouter(dataSource: DataSource): Express.Router {
@@ -16,7 +16,7 @@ export function usersRouter(dataSource: DataSource): Express.Router {
    * GET /users
    * Get all users with pagination
    */
-  router.get('/', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+  router.get('/users', asyncHandler(async (req: Express.Request, res: Express.Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100); // Max 100 per page
     const skip = (page - 1) * limit;
@@ -42,7 +42,7 @@ export function usersRouter(dataSource: DataSource): Express.Router {
    * GET /users/:id
    * Get a specific user
    */
-  router.get('/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+  router.get('/users/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
     const user = await userRepo.findOne({
       where: { id: req.params.id },
     });
@@ -59,7 +59,7 @@ export function usersRouter(dataSource: DataSource): Express.Router {
    * Create a new user (admin only - for now anyone can create)
    * Note: Regular users should use /auth/register instead
    */
-  router.post('/', validateRequest(CreateUserDTO), asyncHandler(async (req: Express.Request, res: Express.Response) => {
+  router.post('/users', validateRequest(CreateUserDTO), asyncHandler(async (req: Express.Request, res: Express.Response) => {
     const { email, firstName, lastName, password } = req.body;
 
     const user = userRepo.create({
@@ -80,7 +80,7 @@ export function usersRouter(dataSource: DataSource): Express.Router {
    * PATCH /users/:id
    * Update user profile
    */
-  router.patch('/:id', validateRequest(UpdateUserDTO), asyncHandler(async (req: Express.Request, res: Express.Response) => {
+  router.patch('/users/:id', validateRequest(UpdateUserDTO), asyncHandler(async (req: Express.Request, res: Express.Response) => {
     const userId = req.params.id;
     const sessionUserId = req.session?.userId;
 
@@ -109,7 +109,7 @@ export function usersRouter(dataSource: DataSource): Express.Router {
       // Check if new email is already taken
       const existingUser = await userRepo.findOne({ where: { email: email.toLowerCase() } });
       if (existingUser) {
-        throw new ValidationError('Email is already in use');
+        throw new ValidationError('Email already exists');
       }
       user.email = email.toLowerCase();
       user.isEmailVerified = false; // Reset verification status
@@ -125,7 +125,7 @@ export function usersRouter(dataSource: DataSource): Express.Router {
       // Verify current password
       const isPasswordValid = await user.verifyPassword(currentPassword);
       if (!isPasswordValid) {
-        throw new ValidationError('Current password is incorrect');
+        throw new UnauthorizedError('Current password is incorrect');
       }
 
       user.password = newPassword; // Will be hashed by @BeforeUpdate hook
@@ -143,7 +143,7 @@ export function usersRouter(dataSource: DataSource): Express.Router {
    * DELETE /users/:id
    * Soft delete a user
    */
-  router.delete('/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
+  router.delete('/users/:id', asyncHandler(async (req: Express.Request, res: Express.Response) => {
     const userId = req.params.id;
     const sessionUserId = req.session?.userId;
 

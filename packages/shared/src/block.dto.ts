@@ -7,6 +7,8 @@ export class BlockDTO {
     @Expose() name: string;
     @Expose() description?: string;
     @Expose() completed: boolean;
+    @Expose() goals?: string[];
+    @Expose() sessionsPerWeek?: number;
 
     @Expose()
     _links?: {

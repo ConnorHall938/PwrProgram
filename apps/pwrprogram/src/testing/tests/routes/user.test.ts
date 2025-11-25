@@ -37,7 +37,7 @@ describe('User API', () => {
                 .expect(201);
 
             // Verify response structure
-            expect(response.body).toHaveProperty('message', 'Registration successful');
+            expect(response.body).toHaveProperty('message', 'User registered successfully');
             expect(response.body).toHaveProperty('user');
 
             const user = response.body.user;
@@ -70,7 +70,7 @@ describe('User API', () => {
             } as Partial<CreateUserDTO>;
 
             const res = await request.post('/api/auth/register').send(badPayload).expect(400);
-            expect(res.body).toHaveProperty('message', 'Validation failed');
+            expect(res.body).toHaveProperty('error', 'Validation failed');
             expect(res.body).toHaveProperty('errors');
             expect(Object.keys(res.body.errors)).toEqual(
                 expect.arrayContaining(['firstName', 'email', 'password'])
@@ -87,7 +87,7 @@ describe('User API', () => {
             };
             await request.post('/api/auth/register').send(dto).expect(201);
             const res = await request.post('/api/auth/register').send(dto).expect(400);
-            expect(res.body).toHaveProperty('message', 'Email already exists');
+            expect(res.body).toHaveProperty('error', 'Email already exists');
         });
 
         it('should allow registering a user without optional lastName', async () => {
@@ -111,7 +111,7 @@ describe('User API', () => {
                 firstName: 'Short'
             };
             const res = await request.post('/api/auth/register').send(dto).expect(400);
-            expect(res.body.message).toBe('Validation failed');
+            expect(res.body.error).toBe('Validation failed');
             expect(res.body.errors.password).toBeDefined();
         });
     });

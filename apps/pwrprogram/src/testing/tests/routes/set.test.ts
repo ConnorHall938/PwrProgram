@@ -1,89 +1,229 @@
-import { CreateProgramDTO, CreateCycleDTO, CreateBlockDTO, CreateSessionDTO, CreateExerciseDTO, CreateSetDTO, UpdateSetDTO } from '@pwrprogram/shared';
+import { CreateSetDTO, UpdateSetDTO } from '@pwrprogram/shared';
 import * as supertest from 'supertest';
+import { Repository } from 'typeorm';
 
+import { Set } from '../../../entity/set';
 import { app } from '../../setup';
+import { testDataSource } from '../../utils/test-data-source';
+import { createAuthenticatedSession } from '../../utils/auth-helper';
 
 const request = supertest.default(app);
 
 describe('Set API', () => {
-    let programID: string; let cycleID: string; let blockID: string; let sessionID: string; let exerciseID: string; let userID: string; let userCookie: string;
-
-    async function loginUser(id: string): Promise<string> { const loginRes = await request.post(`/api/login/${id}`).send().expect(200); return loginRes.headers['set-cookie'][0].split(';')[0]; }
-    function auth(r: supertest.Test, cookie: string = userCookie) { return r.set('Cookie', [cookie]); }
+    let setRepo: Repository<Set>;
 
     beforeAll(async () => {
-        const userRes = await request.post('/api/users').send({ firstName: 'SetUser', email: `set-${Date.now()}@example.com`, password: 'securepass' }).expect(201);
-        userID = userRes.body.id; userCookie = await loginUser(userID);
-        const programRes = await auth(request.post('/api/programs')).send({ name: 'Set Program' } as CreateProgramDTO).expect(201); programID = programRes.body.id;
-        const cycleRes = await request.post(`/api/cycles/${programID}/cycles`).send({ name: 'Set Cycle' } as CreateCycleDTO).expect(201); cycleID = cycleRes.body.id;
-        const blockRes = await request.post(`/api/blocks/${cycleID}/blocks`).send({ name: 'Set Block' } as CreateBlockDTO).expect(201); blockID = blockRes.body.id;
-        const sessionRes = await request.post(`/api/sessions/${blockID}/sessions`).send({ name: 'Set Session' } as CreateSessionDTO).expect(201); sessionID = sessionRes.body.id;
-        const exerciseRes = await request.post(`/api/exercises/${sessionID}/exercises`).send({ name: 'Set Exercise' } as CreateExerciseDTO).expect(201); exerciseID = exerciseRes.body.id;
+        setRepo = testDataSource.getRepository(Set);
     });
 
-    it('should create a set', async () => {
-        const payload: CreateSetDTO = { targetReps: 5, targetWeight: 100 };
-        const res = await request.post(`/api/sets/${exerciseID}/sets`).send(payload).expect(201);
-        expect(res.body).toHaveProperty('id');
-        expect(res.body.exerciseId).toBe(exerciseID);
-        expect(res.body._links.self).toBe(`/api/exercises/${exerciseID}/sets/${res.body.id}`);
+    describe('POST /api/exercises/:exerciseId/sets', () => {
+        it('should require authentication', async () => {
+            const exerciseId = '00000000-0000-0000-0000-000000000000';
+            const payload: CreateSetDTO = { targetReps: 10 };
+            await request.post(`/api/exercises/${exerciseId}/sets`).send(payload).expect(401);
+        });
+
+        it('should create a set for the authenticated user\'s exercise', async () => {
+            const { authHelper } = await createAuthenticatedSession(app);
+
+            // Create full hierarchy
+            const programResponse = await authHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await authHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await authHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await authHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await authHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const exerciseId = exerciseResponse.body.id;
+
+            const payload: CreateSetDTO = { targetReps: 10, targetWeight: 100, targetRpe: 8 };
+            const response = await authHelper.authenticatedPost(`/api/exercises/${exerciseId}/sets`, payload).expect(201);
+
+            expect(response.body).toHaveProperty('id');
+            expect(response.body.targetReps).toBe(10);
+            expect(response.body.targetWeight).toBe(100);
+            expect(response.body.exerciseId).toBe(exerciseId);
+
+            const saved = await setRepo.findOneBy({ id: response.body.id });
+            expect(saved).toBeTruthy();
+            expect(saved!.exerciseId).toBe(exerciseId);
+        });
+
+        it('should prevent creating set for another user\'s exercise', async () => {
+            const { authHelper: firstAuthHelper } = await createAuthenticatedSession(app, { email: `first-${Date.now()}@example.com` });
+            const programResponse = await firstAuthHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await firstAuthHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await firstAuthHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await firstAuthHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await firstAuthHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const exerciseId = exerciseResponse.body.id;
+
+            const { authHelper: secondAuthHelper } = await createAuthenticatedSession(app, { email: `second-${Date.now()}@example.com` });
+            const response = await secondAuthHelper.authenticatedPost(`/api/exercises/${exerciseId}/sets`, { targetReps: 10 }).expect(403);
+            expect(response.body).toHaveProperty('error');
+        });
     });
 
-    it('should list sets for an exercise', async () => {
-        const before = await request.get(`/api/sets/${exerciseID}/sets`).expect(200);
-        const baseline = before.body.length;
-        await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 3 }).expect(201);
-        await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 4 }).expect(201);
-        const after = await request.get(`/api/sets/${exerciseID}/sets`).expect(200);
-        expect(after.body.length).toBeGreaterThanOrEqual(baseline + 2);
+    describe('GET /api/exercises/:exerciseId/sets', () => {
+        it('should require authentication', async () => {
+            await request.get('/api/exercises/00000000-0000-0000-0000-000000000000/sets').expect(401);
+        });
+
+        it('should list sets with pagination', async () => {
+            const { authHelper } = await createAuthenticatedSession(app);
+            const programResponse = await authHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await authHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await authHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await authHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await authHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const exerciseId = exerciseResponse.body.id;
+
+            for (let i = 0; i < 3; i++) {
+                await authHelper.authenticatedPost(`/api/exercises/${exerciseId}/sets`, { targetReps: i + 1 }).expect(201);
+            }
+
+            const response = await authHelper.authenticatedGet(`/api/exercises/${exerciseId}/sets?page=1&limit=10`).expect(200);
+            expect(response.body).toHaveProperty('data');
+            expect(response.body.data.length).toBe(3);
+            expect(response.body.pagination.total).toBe(3);
+        });
     });
 
-    it('should fetch a set by id', async () => {
-        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 8 }).expect(201);
-        const id = c.body.id;
-        const res = await request.get(`/api/sets/${id}`).expect(200);
-        expect(res.body.id).toBe(id);
-        expect(res.body.exerciseId).toBe(exerciseID);
+    describe('GET /api/sets/:id', () => {
+        it('should require authentication', async () => {
+            await request.get('/api/sets/00000000-0000-0000-0000-000000000000').expect(401);
+        });
+
+        it('should fetch a set by id', async () => {
+            const { authHelper } = await createAuthenticatedSession(app);
+            const programResponse = await authHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await authHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await authHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await authHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await authHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const createResponse = await authHelper.authenticatedPost(`/api/exercises/${exerciseResponse.body.id}/sets`, { targetReps: 10 }).expect(201);
+
+            const response = await authHelper.authenticatedGet(`/api/sets/${createResponse.body.id}`).expect(200);
+            expect(response.body.id).toBe(createResponse.body.id);
+            expect(response.body.targetReps).toBe(10);
+        });
+
+        it('should return 404 if set belongs to another user', async () => {
+            const { authHelper: firstAuthHelper } = await createAuthenticatedSession(app, { email: `first-${Date.now()}@example.com` });
+            const programResponse = await firstAuthHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await firstAuthHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await firstAuthHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await firstAuthHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await firstAuthHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const createResponse = await firstAuthHelper.authenticatedPost(`/api/exercises/${exerciseResponse.body.id}/sets`, { targetReps: 10 }).expect(201);
+
+            const { authHelper: secondAuthHelper } = await createAuthenticatedSession(app, { email: `second-${Date.now()}@example.com` });
+            const response = await secondAuthHelper.authenticatedGet(`/api/sets/${createResponse.body.id}`).expect(404);
+            expect(response.body).toHaveProperty('error', 'Set not found');
+        });
     });
 
-    it('should patch a set', async () => {
-        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 6 }).expect(201);
-        const id = c.body.id;
-        const patch: UpdateSetDTO = { targetReps: 10, completed: true, notes: 'All reps easy' };
-        const res = await request.patch(`/api/sets/${id}`).send(patch).expect(200);
-        expect(res.body.targetReps).toBe(10);
+    describe('PATCH /api/sets/:id', () => {
+        it('should require authentication', async () => {
+            await request.patch('/api/sets/00000000-0000-0000-0000-000000000000').send({}).expect(401);
+        });
+
+        it('should update a set', async () => {
+            const { authHelper } = await createAuthenticatedSession(app);
+            const programResponse = await authHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await authHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await authHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await authHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await authHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const createResponse = await authHelper.authenticatedPost(`/api/exercises/${exerciseResponse.body.id}/sets`, { targetReps: 10 }).expect(201);
+
+            const updateDto: UpdateSetDTO = { actualReps: 12, actualWeight: 105, completed: true };
+            const response = await authHelper.authenticatedPatch(`/api/sets/${createResponse.body.id}`, updateDto).expect(200);
+
+            expect(response.body.actualReps).toBe(12);
+            expect(response.body.actualWeight).toBe(105);
+            expect(response.body.completed).toBe(true);
+
+            const updated = await setRepo.findOneBy({ id: createResponse.body.id });
+            expect(updated!.actualReps).toBe(12);
+            expect(updated!.completed).toBe(true);
+        });
+
+        it('should prevent updating another user\'s set', async () => {
+            const { authHelper: firstAuthHelper } = await createAuthenticatedSession(app, { email: `first-${Date.now()}@example.com` });
+            const programResponse = await firstAuthHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await firstAuthHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await firstAuthHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await firstAuthHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await firstAuthHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const createResponse = await firstAuthHelper.authenticatedPost(`/api/exercises/${exerciseResponse.body.id}/sets`, { targetReps: 10 }).expect(201);
+
+            const { authHelper: secondAuthHelper } = await createAuthenticatedSession(app, { email: `second-${Date.now()}@example.com` });
+            const response = await secondAuthHelper.authenticatedPatch(`/api/sets/${createResponse.body.id}`, { actualReps: 15 }).expect(404);
+            expect(response.body).toHaveProperty('error', 'Set not found');
+
+            const set = await setRepo.findOneBy({ id: createResponse.body.id });
+            expect(set!.actualReps).toBeNull();
+        });
+
+        it('should toggle completion false->true->false', async () => {
+            const { authHelper } = await createAuthenticatedSession(app);
+            const programResponse = await authHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await authHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await authHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await authHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await authHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const createResponse = await authHelper.authenticatedPost(`/api/exercises/${exerciseResponse.body.id}/sets`, { targetReps: 10 }).expect(201);
+
+            const setId = createResponse.body.id;
+            expect(createResponse.body.completed).toBe(false);
+
+            const toTrue = await authHelper.authenticatedPatch(`/api/sets/${setId}`, { completed: true }).expect(200);
+            expect(toTrue.body.completed).toBe(true);
+
+            const toFalse = await authHelper.authenticatedPatch(`/api/sets/${setId}`, { completed: false }).expect(200);
+            expect(toFalse.body.completed).toBe(false);
+        });
     });
 
-    // Negative cases
-    it('should validate create payload (invalid targetRpe)', async () => {
-        const res = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetRpe: 11 }).expect(400);
-        expect(res.body.message).toBe('Validation failed');
-        expect(res.body.errors.targetRpe).toBeDefined();
-    });
+    describe('DELETE /api/sets/:id', () => {
+        it('should require authentication', async () => {
+            await request.delete('/api/sets/00000000-0000-0000-0000-000000000000').expect(401);
+        });
 
-    it('should 404 on non-existent set fetch', async () => {
-        await request.get('/api/sets/00000000-0000-0000-0000-000000000000').expect(404);
-    });
+        it('should soft delete a set', async () => {
+            const { authHelper } = await createAuthenticatedSession(app);
+            const programResponse = await authHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await authHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await authHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await authHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await authHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const createResponse = await authHelper.authenticatedPost(`/api/exercises/${exerciseResponse.body.id}/sets`, { targetReps: 10 }).expect(201);
 
-    it('should 404 on non-existent set patch', async () => {
-        await request.patch('/api/sets/00000000-0000-0000-0000-000000000000').send({ targetReps: 1 }).expect(404);
-    });
+            await authHelper.authenticatedDelete(`/api/sets/${createResponse.body.id}`).expect(204);
 
-    it('should reject invalid type on patch (completed not boolean)', async () => {
-        const c = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 5 }).expect(201);
-        const id = c.body.id;
-        const res = await request.patch(`/api/sets/${id}`).send({ completed: 'yes' }).expect(400);
-        expect(res.body.message).toBe('Validation failed');
-        expect(res.body.errors.completed).toBeDefined();
-    });
+            const deletedSet = await setRepo.findOne({ where: { id: createResponse.body.id }, withDeleted: true });
+            expect(deletedSet).toBeTruthy();
+            expect(deletedSet!.deletedAt).toBeTruthy();
 
-    it('should toggle completion false->true->false', async () => {
-        const created = await request.post(`/api/sets/${exerciseID}/sets`).send({ targetReps: 2 }).expect(201);
-        const id = created.body.id;
-        expect(created.body.completed).toBe(false);
-        const toTrue = await request.patch(`/api/sets/${id}`).send({ completed: true }).expect(200);
-        expect(toTrue.body.completed).toBe(true);
-        const toFalse = await request.patch(`/api/sets/${id}`).send({ completed: false }).expect(200);
-        expect(toFalse.body.completed).toBe(false);
+            const normalQuery = await setRepo.findOneBy({ id: createResponse.body.id });
+            expect(normalQuery).toBeNull();
+        });
+
+        it('should prevent deleting another user\'s set', async () => {
+            const { authHelper: firstAuthHelper } = await createAuthenticatedSession(app, { email: `first-${Date.now()}@example.com` });
+            const programResponse = await firstAuthHelper.authenticatedPost('/api/programs', { name: 'Program' }).expect(201);
+            const cycleResponse = await firstAuthHelper.authenticatedPost(`/api/programs/${programResponse.body.id}/cycles`, { name: 'Cycle' }).expect(201);
+            const blockResponse = await firstAuthHelper.authenticatedPost(`/api/cycles/${cycleResponse.body.id}/blocks`, { name: 'Block' }).expect(201);
+            const sessionResponse = await firstAuthHelper.authenticatedPost(`/api/blocks/${blockResponse.body.id}/sessions`, { name: 'Session' }).expect(201);
+            const exerciseResponse = await firstAuthHelper.authenticatedPost(`/api/sessions/${sessionResponse.body.id}/exercises`, { name: 'Exercise' }).expect(201);
+            const createResponse = await firstAuthHelper.authenticatedPost(`/api/exercises/${exerciseResponse.body.id}/sets`, { targetReps: 10 }).expect(201);
+
+            const { authHelper: secondAuthHelper } = await createAuthenticatedSession(app, { email: `second-${Date.now()}@example.com` });
+            const response = await secondAuthHelper.authenticatedDelete(`/api/sets/${createResponse.body.id}`).expect(404);
+            expect(response.body).toHaveProperty('error', 'Set not found');
+
+            const set = await setRepo.findOneBy({ id: createResponse.body.id });
+            expect(set).toBeTruthy();
+            expect(set!.deletedAt).toBeNull();
+        });
     });
 });

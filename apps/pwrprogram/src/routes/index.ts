@@ -15,13 +15,14 @@ const mountRoutes = (app: Express, dataSource: DataSource) => {
     app.use('/api', baseRouter(dataSource));
 
     // Protected routes - require authentication
-    app.use('/api/users', requireAuth, usersRouter(dataSource));
-    app.use('/api/programs', requireAuth, programsRouter(dataSource));
-    app.use('/api/cycles', requireAuth, cyclesRouter(dataSource));
-    app.use('/api/blocks', requireAuth, blocksRouter(dataSource));
-    app.use('/api/sessions', requireAuth, sessionsRouter(dataSource));
-    app.use('/api/exercises', requireAuth, exercisesRouter(dataSource));
-    app.use('/api/sets', requireAuth, setsRouter(dataSource));
+    // All protected routers are mounted at /api since they define their full nested paths
+    app.use('/api', requireAuth, usersRouter(dataSource));
+    app.use('/api', requireAuth, programsRouter(dataSource));
+    app.use('/api', requireAuth, cyclesRouter(dataSource));
+    app.use('/api', requireAuth, blocksRouter(dataSource));
+    app.use('/api', requireAuth, sessionsRouter(dataSource));
+    app.use('/api', requireAuth, exercisesRouter(dataSource));
+    app.use('/api', requireAuth, setsRouter(dataSource));
 };
 
 export default mountRoutes;
