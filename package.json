@@ -11,13 +11,18 @@
   "scripts": {
     "dev:api": "pnpm --filter pwrprogram devstart",
     "start:api": "pnpm --filter pwrprogram start",
-
     "test": "pnpm -r --workspace-concurrency=1 test",
     "test:watch": "pnpm -r test:watch",
     "test:coverage": "pnpm -r --workspace-concurrency=1 test:coverage",
-
     "test:api": "pnpm --filter pwrprogram test",
     "test:api:watch": "pnpm --filter pwrprogram test:watch",
     "test:api:coverage": "pnpm --filter pwrprogram test:coverage"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "sqlite3",
+      "unrs-resolver"
+    ]
   }
 }
