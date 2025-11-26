@@ -1,3 +1,9 @@
 packages:
-  - 'packages/*'
-  - 'apps/*'
+  - packages/*
+  - apps/*
+
+ignoredBuiltDependencies:
+  - '@scarf/scarf'
+  - bcrypt
+  - sqlite3
+  - unrs-resolver
